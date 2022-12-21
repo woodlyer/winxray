@@ -418,6 +418,7 @@ winform.btnSaveOutbound.oncommand = function(id,event){
 			return winform.editId.editBox.showErrorTip("配置错误","当前代理协议密码不能为空")
 		}  
 	}
+	winform.outboundConfig.security = winform.cmbSecurity.selText;														   
 	
 	table.assign(winform.origOutboundConfig,winform.outboundConfig);
 	winform.endModal();

@@ -130,7 +130,9 @@ restart = function(editor,outbound){
 		}
 		
 		var err;
-		prcsV2Ray,err = ..process.popen(corePath,"-c=config.json" );
+		//prcsV2Ray,err = ..process.popen(corePath,"-c=config.json" );
+		prcsV2Ray,err = ..process.popen(corePath, corePath," run", "-c", "config.json" );
+		..publish("uiCommand.print", corePath);																		   
 		if(!prcsV2Ray){
 			if( nexCore ){ nexCore.stop(); }
 	
