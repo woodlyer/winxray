@@ -1,4 +1,19 @@
 
+WinXray是一个Windows平台上非常好用的软件，原版版本号开发到3.8。
+支持很多协议，支持订阅。但是原作者已经弃坑（原因你懂的）。 
+原地址是 https://www.github.com/win-xray/win-xray
+现在github上能搜到的都不是原作者的作品，甚至有一些假冒官方，比如：https://github.com/TheMRLL/WinXray 等等一大堆。
+
+WinXray是一个壳，底层的工作主要依赖V2Ray，随着时代的进步，V2Ray已经发生了翻天覆地的变化，原有的WinXray没有更新导致有许多的问题。
+本项目在原有基础上稍微进行了修改。
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------------
+
 # WinXray 
 WinXray[:loud_sound:](http://dict.youdao.com/dictvoice?audio=winxray&type=2) 是最简洁轻快的 V2Ray、XRay、Trojan、Trojan-go、Shadowsocks、SSR(ShadowsocksR)、SSRoT、NaïveProxy，SOCKS，HTTP,HTTPS 全能通用客户端（Windows系统），支持并发检测大量服务器并迅速找到当前最快的服务器，服务器连接异常时可自动寻找其他速度最快的服务器 - 切换速度快如闪电，自订阅源获取的服务器异常时可自动刷新订阅，并且自带一键自动部署服务端工具。
 
