@@ -5,9 +5,10 @@ WinXray是一个Windows平台上非常好用的软件，原版版本号开发到
 现在github上能搜到的都不是原作者的作品，甚至有一些假冒官方，比如：https://github.com/TheMRLL/WinXray 等等一大堆。  
 
 WinXray是一个壳，底层的工作主要依赖V2Ray，随着时代的进步，V2Ray已经发生了翻天覆地的变化，原有的WinXray没有更新导致有许多的问题。
-本项目在原有基础上稍微进行了修改。
+本项目在原有基础上稍微进行了修改。  
+点击Release 可以下载。
 
-
+(以下内容是原版WinXray的ReadMe）
 
 
 
