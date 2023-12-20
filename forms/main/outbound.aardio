@@ -18,7 +18,7 @@ cmbSecurity={cls="combobox";left=656;top=140;right=814;bottom=166;dr=1;dt=1;edge
 editAddress={cls="plus";left=656;top=183;right=878;bottom=207;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);textPadding={bottom=1};z=2};
 editId={cls="plus";left=656;top=263;right=986;bottom=287;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};clip=1;dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);notify=1;textPadding={right=75;bottom=1};z=20};
 editOutbound={cls="edit";left=15;top=25;right=472;bottom=462;db=1;dl=1;dr=1;dt=1;edge=1;font=LOGFONT(h=-13);hscroll=1;multiline=1;vscroll=1;z=14};
-editPort={cls="plus";left=656;top=224;right=745;bottom=248;align="left";bgcolor=16777215;num=1;border={bottom=1;color=-8355712};dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);textPadding={bottom=1};z=4};
+editPort={cls="plus";left=656;top=224;right=745;bottom=248;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);num=1;textPadding={bottom=1};z=4};
 editPs={cls="plus";left=656;top=306;right=878;bottom=330;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);textPadding={bottom=1};z=7};
 editSharedLink={cls="plus";left=13;top=475;right=986;bottom=499;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};clip=1;db=1;dl=1;dr=1;font=LOGFONT(h=-16);notify=1;textPadding={right=150;bottom=1};z=22};
 lbId={cls="static";text="登录用户( id ):";left=492;top=262;right=641;bottom=288;align="right";bgcolor=16777215;dr=1;dt=1;font=LOGFONT(h=-16);transparent=1;z=6};
@@ -444,6 +444,7 @@ winform.btnAddOutbound.oncommand = function(id,event){
 			return winform.editId.editBox.showErrorTip("配置错误","当前代理协议密码不能为空")
 		}
 	}
+	winform.outboundConfig.security = winform.cmbSecurity.selText;
 	
 	table.push(config.proxy.outbounds,winform.outboundConfig); 
 	winform.endModal();
