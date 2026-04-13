@@ -32,6 +32,17 @@ static5={cls="static";text="传输协议( network ):";left=473;top=94;right=641;
 )
 /*}}*/
 
+winform.syncData = function(){
+    winform.outboundConfig.protocol = winform.cmbProtocol.selText;
+    winform.outboundConfig.network = winform.cmbNetwork.selText;
+    winform.outboundConfig.security = winform.cmbSecurity.selText;
+    winform.outboundConfig.address = winform.editAddress.text;
+    winform.outboundConfig.port = tonumber(winform.editPort.text);
+    winform.outboundConfig.id = winform.editId.text;
+    winform.outboundConfig.ps = winform.editPs.text;
+}
+
+
 winform.outboundConfig = {};
 winform.addOutboundField = function(k,v){
 	if(winform.outboundConfig[k] !== null){
@@ -62,11 +73,12 @@ winform.cmbProtocol.onProtocolChange = function(){
 	}
 	elseif(sel=="shadowsocks"){
 		winform.cmbSecurity.items = {
-			"aes-256-gcm";"aes-128-gcm";"chacha20-poly1305";"chacha20-ietf-poly1305";"none"
+			"aes-128-gcm";"aes-256-gcm";"chacha20-poly1305";"chacha20-ietf-poly1305";"none"
 		}
 
 		winform.cmbSecurity.selIndex = 1;
-		winform.outboundConfig.security = "aes-256-gcm";
+		winform.outboundConfig.security = "aes-128-gcm";
+		winform.outboundConfig.security = winform.cmbSecurity.selText;
 		
 		winform.cmbNetwork.items = {"tcp";}
 		winform.cmbNetwork.selIndex = 1;
@@ -404,6 +416,7 @@ winform.editOutbound.onChange = function(){
 }
 
 winform.btnSaveOutbound.oncommand = function(id,event){
+	winform.syncData()
 	if(!#winform.editAddress.text){
 		return winform.editAddress.editBox.showErrorTip("配置错误","服务器地址不能为空")
 	}
@@ -430,6 +443,7 @@ winform.btnSaveOutbound.oncommand = function(id,event){
 
 import config;
 winform.btnAddOutbound.oncommand = function(id,event){
+	winform.syncData()
 	if(!#winform.editAddress.text){
 		return winform.editAddress.editBox.showErrorTip("配置错误","服务器地址不能为空")
 	}
