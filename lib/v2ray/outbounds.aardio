@@ -396,7 +396,7 @@ importFromString = function(str,subscribeUrl){
 					if(info.security) outbound.tls = info.security;
 					if(info.flow) outbound.flow = info.flow;
 					if(info.allowInsecure!==null) {
-						outbound.allowInsecure = (info.allowInsecure!=="0" ||info.allowInsecure!=="false" ) 
+						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
 					}
 					if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
 					if(info.alpn) outbound.alpn = info.alpn;	 
@@ -606,7 +606,7 @@ importFromString = function(str,subscribeUrl){
 					outbound.host = info.host;
 					outbound.path = info.path; 
 					if(info.allowInsecure!==null) {
-						outbound.allowInsecure = (info.allowInsecure!=="0" ||info.allowInsecure!=="false" ) 
+						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
 					}
 					
 					if(info.type && info.type!=="original"){
@@ -719,8 +719,8 @@ importFromString = function(str,subscribeUrl){
 						outbound.protocol = "http";
 					}
 
-					if(info.allowInsecure){
-						outbound.allowInsecure = (info.allowInsecure!=="0" ||info.allowInsecure!=="false" ) 
+					if(info.allowInsecure!==null){
+						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
 					}
 				}
 				
