@@ -166,7 +166,7 @@ restart = function(editor,outbound){
 		..config.core.save();
 	}
 	
-	..publish("uiCommand.print","已启动代理服务器，SOCKS端口:" + socksProxyPort + " HTTP端口:" + httpProxPort) 
+	..publish("uiCommand.print","已启动代理服务器，SOCKS端口:" + socksProxyPort + ", HTTP端口:" + httpProxPort) 
 	..publish("v2RayCore.restarted",socksProxyPort,httpProxPort); 
 	v2RayStarting = false;
 	return true;
