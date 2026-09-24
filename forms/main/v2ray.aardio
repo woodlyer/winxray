@@ -607,16 +607,16 @@ frmXray.listview.onnotify = function(id,code,ptr){
 				});
 
 				popmenu.add('上移服务器( Ctrl+Up / Alt+Up )',function(id){
-					frmXray.listview.moveUp();
+					frmXray.listview.moveUp(currentIdx);
 				});
 				popmenu.add('下移服务器( Ctrl+Down / Alt+Down )',function(id){
-					frmXray.listview.moveDown();
+					frmXray.listview.moveDown(currentIdx);
 				});
 				popmenu.add('置顶服务器',function(id){
-					frmXray.listview.moveToTop();
+					frmXray.listview.moveToTop(currentIdx);
 				});
 				popmenu.add('置底服务器',function(id){
-					frmXray.listview.moveToBottom();
+					frmXray.listview.moveToBottom(currentIdx);
 				});
 
 				popmenu.add();
@@ -938,36 +938,50 @@ frmXray.listview.moveItem = function(fromIndex, toIndex){
 	for(i=1;#outbounds;1){
 		if(#speeds[i]) frmXray.listview.setItemText(speeds[i], i, 7);
 	}
-	frmXray.listview.setSelected(toIndex);
+	
+	frmXray.listview.selIndex = toIndex;
+	frmXray.listview.setSelected(toIndex, true);
+	frmXray.listview.setItemState(toIndex, 3/*_LVIS_SELECTED | _LVIS_FOCUSED*/, 3/*_LVIS_SELECTED | _LVIS_FOCUSED*/);
+	frmXray.listview.ensureVisible(toIndex);
+	frmXray.listview.setFocus();
+	
 	frmXray.listview.activeOutboundIndex = targetActive;
 	if(targetActive){
 		frmXray.listview.setItemText("活动服务器：正常", targetActive, 8);
 	}
 }
 
-frmXray.listview.moveUp = function(){
+frmXray.listview.getSelectedIndex = function(){
 	var sel = frmXray.listview.selIndex;
+	if(sel && sel >= 1 && sel <= #config.proxy.outbounds) return sel;
+	var selected = frmXray.listview.selected;
+	if(selected && #selected) return selected[1];
+	return null;
+}
+
+frmXray.listview.moveUp = function(sel){
+	sel = sel : frmXray.listview.getSelectedIndex();
 	if(sel && sel > 1){
 		frmXray.listview.moveItem(sel, sel - 1);
 	}
 }
 
-frmXray.listview.moveDown = function(){
-	var sel = frmXray.listview.selIndex;
+frmXray.listview.moveDown = function(sel){
+	sel = sel : frmXray.listview.getSelectedIndex();
 	if(sel && sel < #config.proxy.outbounds){
 		frmXray.listview.moveItem(sel, sel + 1);
 	}
 }
 
-frmXray.listview.moveToTop = function(){
-	var sel = frmXray.listview.selIndex;
+frmXray.listview.moveToTop = function(sel){
+	sel = sel : frmXray.listview.getSelectedIndex();
 	if(sel && sel > 1){
 		frmXray.listview.moveItem(sel, 1);
 	}
 }
 
-frmXray.listview.moveToBottom = function(){
-	var sel = frmXray.listview.selIndex;
+frmXray.listview.moveToBottom = function(sel){
+	sel = sel : frmXray.listview.getSelectedIndex();
 	if(sel && sel < #config.proxy.outbounds){
 		frmXray.listview.moveItem(sel, #config.proxy.outbounds);
 	}
