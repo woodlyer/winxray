@@ -3,6 +3,7 @@ import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=892;bottom=573;bgcolor=16777215)
 winform.add(
+btnEditPac={cls="plus";text="编辑 PAC 规则";left=370;top=277;right=495;bottom=307;align="left";bgcolor=16777215;db=1;dl=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=10}};iconText='\uF1C4';notify=1;textPadding={left=28};z=32};
 btnOpenFirewall={cls="plus";text="设置防火墙";left=485;top=398;right=615;bottom=428;align="left";db=1;dl=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=12}};iconText='\uF09C';notify=1;textPadding={left=30};z=7};
 btnUpdate={cls="plus";text="保 存";left=516;top=514;right=619;bottom=550;align="left";bgcolor=11580047;db=1;dl=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=22}};iconText='\uF0C7';notify=1;textPadding={left=40};z=5};
 chkEnableGitConfigGithub={cls="plus";text="设置 git 客户端启用 github.com 代理提速（支持https、ssh协议）";left=276;top=437;right=792;bottom=468;align="left";bgcolor=16777215;db=1;dl=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-16;name='FontAwesome')};iconText='\uF0C8';notify=1;textPadding={left=19};z=13};
@@ -46,6 +47,11 @@ winform.radioSocksProxy.skin(style.radio)
 winform.radioHttpPac.skin(style.radio)
 winform.radioSocksPac.skin(style.radio)
 winform.btnUpdate.skin(style.primaryButton);
+winform.btnEditPac.skin(style.plainButton);
+winform.btnEditPac.oncommand = function(id,event){
+	var frmPac = ..mainForm.loadForm("\forms\main\pac.aardio");
+	frmPac.show();
+}
 winform.editSocksPort.skin(style.edit);
 winform.editPacPort.skin(style.edit);
 winform.editPacUrl.editBox.readonly = true;
