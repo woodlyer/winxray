@@ -469,9 +469,14 @@ winform.editOutbounds.enablePopMenu(function(){
 						winform.editOutbounds.selText = '"security":"auto",'
 					} 
 				};
-				{ "允许忽略证书:allowInsecure";
+				{ "允许忽略证书:allowInsecure (true)";
 					function(id){
 						winform.editOutbounds.selText = '"allowInsecure":true,'
+					} 
+				};
+				{ "校验证书有效性:allowInsecure (false)";
+					function(id){
+						winform.editOutbounds.selText = '"allowInsecure":false,'
 					} 
 				};
 				{ "TLS服务器名:sni";

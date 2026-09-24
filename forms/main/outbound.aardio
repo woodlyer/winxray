@@ -336,9 +336,14 @@ var insertFieldMenu = {
 			winform.addOutboundField("alpn",{"h2";"http/1.1"});
 		} 
 	};
-	{ "允许忽略证书:allowInsecure";
+	{ "允许忽略证书:allowInsecure (true)";
 		function(id){
 			winform.addOutboundField("allowInsecure",true);
+		} 
+	};
+	{ "校验证书有效性:allowInsecure (false)";
+		function(id){
+			winform.addOutboundField("allowInsecure",false);
 		} 
 	};
 	{ "多路复用最大连接:concurrency";
