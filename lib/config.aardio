@@ -1,4 +1,4 @@
-﻿//config 配置文件 
+//config 配置文件 
 import fsys.config;
 config  = fsys.config( io.appData("/winXray/") ); 
 
@@ -119,6 +119,21 @@ config.__resetDefaultCore = function(){
 		routing={
 			domainStrategy="IPIfNonMatch";
 			rules={
+				{
+					domain={
+						"geosite:cn"
+					};
+					outboundTag="direct";
+					type="field";
+				};
+				{
+					ip={
+						"geoip:cn";
+						"geoip:private"
+					};
+					outboundTag="direct";
+					type="field";
+				};
 				{
 					inboundTag={
 						"api"

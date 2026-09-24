@@ -553,6 +553,21 @@ winform.editOutbounds.enablePopMenu(function(){
 })
 
 winform.editCoreConfig.enablePopMenu({ 
+	{ "插入路由规则: 广告拦截 (geosite:category-ads-all -> block)";
+		function(id){
+			winform.editCoreConfig.selText = '{\n                "domain": [\n                    "geosite:category-ads-all"\n                ],\n                "outboundTag": "block",\n                "type": "field"\n            },';
+		}
+	};
+	{ "插入路由规则: 国内域名直连 (geosite:cn -> direct)";
+		function(id){
+			winform.editCoreConfig.selText = '{\n                "domain": [\n                    "geosite:cn"\n                ],\n                "outboundTag": "direct",\n                "type": "field"\n            },';
+		}
+	};
+	{ "插入路由规则: 国内IP直连 (geoip:cn -> direct)";
+		function(id){
+			winform.editCoreConfig.selText = '{\n                "ip": [\n                    "geoip:cn",\n                    "geoip:private"\n                ],\n                "outboundTag": "direct",\n                "type": "field"\n            },';
+		}
+	};
 	{ /*---分隔线---*/ };
 	{ "重置为默认内核配置";
 		function(id){  

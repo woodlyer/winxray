@@ -59,6 +59,23 @@
     "routing": {
         "domainStrategy": "IPIfNonMatch",
         "rules": [
+            // 备用广告拦截规则（需要时取消注释）：
+            // { "domain": ["geosite:category-ads-all"], "outboundTag": "block", "type": "field" },
+            {
+                "domain": [
+                    "geosite:cn"
+                ],
+                "outboundTag": "direct",
+                "type": "field"
+            },
+            {
+                "ip": [
+                    "geoip:cn",
+                    "geoip:private"
+                ],
+                "outboundTag": "direct",
+                "type": "field"
+            },
             {
                 "inboundTag": [
                     "api"
