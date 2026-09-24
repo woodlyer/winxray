@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<project ver="10" name="WinXray" libEmbed="true" icon="\forms\ico\app.ico" ui="win" output="WinXray.exe" CompanyName="WinXray" FileDescription="通用代理客户端" LegalCopyright="Copyright (C) WinXray" ProductName="WinXray" InternalName="WinXray" FileVersion="3.8.0.0" ProductVersion="3.8.0.0" publishDir="\WinXray" dstrip="false" local="false">
+<?xml version="1.0" encoding="utf-8"?>
+<project ver="10" name="WinXray" libEmbed="true" icon="\forms\ico\app.ico" ui="win" output="WinXray.exe" CompanyName="WinXray" FileDescription="通用代理客户端" LegalCopyright="Copyright (C) WinXray" ProductName="WinXray" InternalName="WinXray" FileVersion="3.11.0.0" ProductVersion="3.11.0.0" publishDir="\WinXray" dstrip="false" local="false">
 	<file name="main" path="main.aardio"/>
 	<folder name="窗体" path="forms" comment="" embed="true" local="false" ignored="false">
 		<folder name="ico" path="forms\ico" comment="forms\ico">
