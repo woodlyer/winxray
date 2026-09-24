@@ -73,7 +73,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 		}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";
-		winform.btnUpdateCore.text = '下载 / 更新支持组件： V2Ray Core';
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入 GUID");
 	}
 	elseif(sel=="shadowsocks"){
@@ -88,7 +88,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 		winform.cmbNetwork.items = {"tcp";}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";
-		winform.btnUpdateCore.text = '下载 / 更新支持组件： V2Ray Core';
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入密码");
 	}
 	elseif(sel=="ssr"){
@@ -152,7 +152,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 		winform.cmbNetwork.items = {"tcp";}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";  
-		winform.btnUpdateCore.text = '下载 / 更新支持组件： V2Ray Core';
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入 用户名:密码");
 	}
 	elseif(sel=="http" || sel=="https"){
@@ -162,7 +162,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 		winform.cmbNetwork.items = {"tcp";}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";  
-		winform.btnUpdateCore.text = '下载 / 更新支持组件： V2Ray Core';
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入 用户名:密码");
 	}
 	else {
@@ -172,7 +172,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 		winform.cmbNetwork.items = {"tcp";}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";
-		winform.btnUpdateCore.text = '下载 / 更新支持组件： V2Ray Core';
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入密码");
 	} 
 }
@@ -672,11 +672,11 @@ winform.btnUpdateCore.oncommand = function(id,event){
 		if( versionTag ){
 			publish("uiCommand.restartV2RayCore");
 			winform.btnUpdateCore.disabledText = null;
-			winform.msgOk("已下载最新 V2Ray Core 版本：" + versionTag + '\nV2Ray 内核已切换为： V2Ray Core',1500)
+			winform.msgOk("已下载最新 Xray Core 版本：" + versionTag + '\n代理内核已切换为： Xray Core',1500)
 		}
 		else {
 			winform.btnUpdateCore.disabledText = null;
-			winform.msgErr("V2Ray Core 下载失败！");
+			winform.msgErr("Xray Core 下载失败！");
 		} 
 	}
 }
