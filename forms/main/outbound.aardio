@@ -33,13 +33,18 @@ static5={cls="static";text="传输协议( network ):";left=473;top=94;right=641;
 /*}}*/
 
 winform.syncData = function(){
-    winform.outboundConfig.protocol = winform.cmbProtocol.selText;
-    winform.outboundConfig.network = winform.cmbNetwork.selText;
-    winform.outboundConfig.security = winform.cmbSecurity.selText;
-    winform.outboundConfig.address = winform.editAddress.text;
-    winform.outboundConfig.port = tonumber(winform.editPort.text);
-    winform.outboundConfig.id = winform.editId.text;
-    winform.outboundConfig.ps = winform.editPs.text;
+    var data = web.json.tryParse(winform.editOutbound.text);
+    if(type(data)=="table"){
+        table.clear(winform.outboundConfig);
+        table.assign(winform.outboundConfig, data);
+    }
+    if(#winform.cmbProtocol.selText) winform.outboundConfig.protocol = winform.cmbProtocol.selText;
+    if(#winform.cmbNetwork.selText) winform.outboundConfig.network = winform.cmbNetwork.selText;
+    if(#winform.cmbSecurity.selText) winform.outboundConfig.security = winform.cmbSecurity.selText;
+    if(#winform.editAddress.text) winform.outboundConfig.address = winform.editAddress.text;
+    if(#winform.editPort.text) winform.outboundConfig.port = tonumber(winform.editPort.text);
+    if(#winform.editId.text) winform.outboundConfig.id = winform.editId.text;
+    if(winform.editPs.text!==null) winform.outboundConfig.ps = winform.editPs.text;
 }
 
 
@@ -484,7 +489,9 @@ winform.btnSaveOutbound.oncommand = function(id,event){
 	}
 	winform.outboundConfig.security = winform.cmbSecurity.selText;														   
 	
+	table.clear(winform.origOutboundConfig);
 	table.assign(winform.origOutboundConfig,winform.outboundConfig);
+	config.proxy.save();
 	winform.endModal();
 	
 	publish("uiCommand.restartV2RayCore");
@@ -512,6 +519,7 @@ winform.btnAddOutbound.oncommand = function(id,event){
 	winform.outboundConfig.security = winform.cmbSecurity.selText;
 	
 	table.push(config.proxy.outbounds,winform.outboundConfig); 
+	config.proxy.save();
 	winform.endModal();
 
 	publish("uiCommand.restartV2RayCore");

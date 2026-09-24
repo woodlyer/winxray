@@ -604,7 +604,8 @@ frmXray.listview.onnotify = function(id,code,ptr){
 			popmenu.add("编辑 / 新增代理服务器",function(id){ 
 				var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio");
 				frmOutbound.setOutboundConfig(config.proxy.outbounds[currentIdx]);
-				frmOutbound.doModal() 
+				frmOutbound.doModal();
+				publish("uiCommand.restartV2RayCore");
 			});
 			
 			popmenu.add("自剪贴板批量导入分享链接、订阅源",function(id){
