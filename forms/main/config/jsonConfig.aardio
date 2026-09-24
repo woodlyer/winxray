@@ -14,11 +14,11 @@ editCoreConfig={cls="edit";left=9;top=72;right=930;bottom=594;db=1;dl=1;dr=1;dt=
 editOutbounds={cls="edit";left=9;top=29;right=930;bottom=594;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=8};
 lbTip={cls="static";text="可在下面输入多行服务器分享链接，或JSON数组( 点击字段名会显示用法说明 )：";left=11;top=9;right=899;bottom=29;color=3947580;dl=1;dr=1;dt=1;font=LOGFONT(h=-13);transparent=1;z=9};
 lbTipForCoreJson={cls="static";text="tag 指定为 proxy,http_proxy 的节点属于自动维护节点 - 不可删除";left=468;top=45;right=849;bottom=68;color=4964352;dl=1;dt=1;transparent=1;z=19};
-navAdvancedConfig={cls="plus";text="代理端口 / 高级配置";left=359;top=600;right=493;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=10};
-navCoreConfig={cls="plus";text="Core 配置 ( JSON )";left=162;top=600;right=293;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=3};
-navOutbounds={cls="plus";text="服务器配置( JSON )";left=31;top=600;right=162;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=2};
+navAdvancedConfig={cls="plus";text="代理端口 / 高级配置";left=31;top=600;right=165;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=10};
+navCoreConfig={cls="plus";text="Core 配置 ( JSON )";left=362;top=600;right=493;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=3};
+navOutbounds={cls="plus";text="服务器配置( JSON )";left=231;top=600;right=362;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=2};
 navRight={cls="plus";left=493;top=600;right=762;bottom=601;bgcolor=16777215;border={top=1;color=-16744448};db=1;dl=1;dr=1;linearGradient=180;z=4};
-navSubscription={cls="plus";text="订阅";left=293;top=600;right=359;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=11};
+navSubscription={cls="plus";text="订阅";left=165;top=600;right=231;bottom=632;border={top=1;color=-16744448};db=1;dl=1;z=11};
 navUwpExemption={cls="plus";text="UWP 应用配置";left=499;top=600;right=633;bottom=632;border={top=1;color=-16744448};db=1;dl=1;notify=1;z=18};
 plus={cls="plus";left=9;top=600;right=31;bottom=601;border={top=1;color=-16744448};db=1;dl=1;z=5};
 subscription={cls="\forms\main\config\subscription.aardio";left=9;top=19;right=930;bottom=594;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;z=1}
@@ -28,7 +28,8 @@ subscription={cls="\forms\main\config\subscription.aardio";left=9;top=19;right=9
 import config;
 import web.json;
 import win.ui.tabs;
-var tbs = win.ui.tabs(winform.navOutbounds,winform.navCoreConfig,winform.navSubscription,winform.navAdvancedConfig);
+var tbs = win.ui.tabs(winform.navAdvancedConfig,winform.navSubscription,winform.navOutbounds,winform.navCoreConfig);
+winform.tbs = tbs;
 tbs.margin = 0;
 
 tbs.skin({
@@ -48,26 +49,26 @@ tbs.skin({
 });
 
 tbs.onSelchange = function(idx,strip,form){
-    winform.btnUpdateSsrCore.hide = idx!=2;
-	winform.btnUpdateV2RayCore.hide = idx!=2;
-	winform.btnUpdateXrayCore.hide = idx!=2;
-	winform.btnUpdateRules.hide = idx!=2;
-	winform.btnUpdateNaiveCore.hide = idx!=2;
-	winform.editCoreConfig.hide = idx!=2; 
-	winform.editOutbounds.hide = idx!=1;	
-	winform.subscription.hide = idx!=3;
-	winform.advancedConfig.hide = idx!=4;
-	winform.btnUpdate.hide = idx>2;
-	winform.lbTip.hide = idx!=1; 
+    winform.advancedConfig.hide = idx!=1;
+	winform.subscription.hide = idx!=2;
+	winform.editOutbounds.hide = idx!=3;
+	winform.lbTip.hide = idx!=3; 
+	winform.btnUpdateSsrCore.hide = idx!=4;
+	winform.btnUpdateV2RayCore.hide = idx!=4;
+	winform.btnUpdateXrayCore.hide = idx!=4;
+	winform.btnUpdateRules.hide = idx!=4;
+	winform.btnUpdateNaiveCore.hide = idx!=4;
+	winform.editCoreConfig.hide = idx!=4; 
 	winform.lbTipForCoreJson.hide = true; 
+	winform.btnUpdate.hide = (idx!=3 && idx!=4);
 	
-	if(idx==1){
+	if(idx==3){
 		winform.btnUpdate.text = "更新服务器配置"; 
 	}
-	elseif(idx==2) {  
+	elseif(idx==4) {  
 		winform.btnUpdate.text = "更新内核配置 " 
 	}	
-	elseif(idx==3) { 
+	elseif(idx==2) { 
 		winform.subscription.loadSubscriptionsOnce();
 	}
 }
@@ -78,7 +79,7 @@ winform.btnUpdate.skin(style.primaryButton);
 winform.btnUpdate.oncommand = function(id,event){
 	winform.btnUpdate.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'};
 
-	if(tbs.selIndex==1){
+	if(tbs.selIndex==3){
 		if(..string.match(winform.editOutbounds.text,"%\[\]")){
 			var cfg,err = web.json.tryParse(winform.editOutbounds.text);
 			if(!cfg){
@@ -102,7 +103,7 @@ winform.btnUpdate.oncommand = function(id,event){
 		winform.editOutbounds.modified = false;
 		publish("uiCommand.restartV2RayCore",cfg)    	
 	}
-	elseif(tbs.selIndex==2) {
+	elseif(tbs.selIndex==4) {
 		var cfg,err = web.json.tryParse(winform.editCoreConfig.text);
 		if(type(cfg)!==type.table){
 			winform.editCoreConfig.showErrorTip(,string.concat("JSON语法错误 ",err));
@@ -184,7 +185,7 @@ winform.btnUpdate.oncommand = function(id,event){
 
 import v2ray.outbounds;
 winform.editOutbounds.enablePopMenu(function(){
-	if(tbs.selIndex==1){
+	if(tbs.selIndex==3){
 		var strEditBounds = string.trim(winform.editOutbounds.text);
 		var menu = {
 			{ /*---分隔线---*/ };

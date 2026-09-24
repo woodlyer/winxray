@@ -215,6 +215,11 @@ tbs.loadForm(2,"\forms\main\config\jsonConfig.aardio" );
 tbs.loadForm(3,"\forms\main\tools\tools.aardio");
 
 tbs.selIndex = 1;
+tbs.onSelchange = function(idx,strip,form){
+	if(idx==2 && form && form.tbs){
+		form.tbs.selIndex = 1;
+	}
+}
 
 import v2ray.core;
 import win.ui.menu;
