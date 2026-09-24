@@ -86,13 +86,19 @@ exportSharedLinks = function(outbounds){
 			
 			var info = {};
 			if(outbound.network!="tcp") info.type = outbound.network ;
-			if(outbound.security!="none") info.encryption = outbound.security; 
+			if(outbound.security && outbound.security!="none" && outbound.security!="auto" && outbound.security!="reality") info.encryption = outbound.security; 
 			if(outbound.tls) info.security = outbound.tls;
 			if(outbound.flow) info.flow = outbound.flow;
-			if(outbound.allowInsecure) info.allowInsecure = outbound.allowInsecure;
+			if(outbound.allowInsecure && outbound.tls!="reality") info.allowInsecure = outbound.allowInsecure;
 			if(outbound.alpn) info.alpn = outbound.alpn;
 			if(outbound.disableSessionResumption) info.disableSessionResumption = outbound.disableSessionResumption;
 			if(outbound.sni){ info.sni = outbound.sni;}
+			if(outbound.publicKey || outbound.pbk) info.pbk = outbound.publicKey : outbound.pbk;
+			if(outbound.shortId || outbound.sid) info.sid = outbound.shortId : outbound.sid;
+			if(outbound.spiderX || outbound.spx) info.spx = outbound.spiderX : outbound.spx;
+			if(outbound.fingerprint || outbound.fp) info.fp = outbound.fingerprint : outbound.fp;
+			if(outbound.serviceName) info.serviceName = outbound.serviceName;
+			if(outbound.mode) info.mode = outbound.mode;
 			info.host = outbound.host;
 			info.path = outbound.path;
 			info.seed = info.seed; 
@@ -463,16 +469,22 @@ importFromString = function(str,subscribeUrl){
 					outbound.seed = info.seed; 
 					outbound.key = info.key; 
 					
-					outbound.network = info.type;
+					outbound.network = info.type : "tcp";
 					outbound.type = info.headerType; //kcp || quic
 					
 					if(info.security) outbound.tls = info.security;
 					if(info.flow) outbound.flow = info.flow;
 					if(info.allowInsecure!==null) {
-						outbound.allowInsecure = (info.allowInsecure!=="0" ||info.allowInsecure!=="false" ) 
+						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
 					}
 					if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
 					if(info.alpn) outbound.alpn = info.alpn;	 
+					if(info.pbk || info.publicKey) outbound.publicKey = info.pbk : info.publicKey;
+					if(info.sid || info.shortId) outbound.shortId = info.sid : info.shortId;
+					if(info.spx || info.spiderX) outbound.spiderX = info.spx : info.spiderX;
+					if(info.fp || info.fingerprint) outbound.fingerprint = info.fp : info.fingerprint;
+					if(info.serviceName) outbound.serviceName = info.serviceName;
+					if(info.mode) outbound.mode = info.mode;
 				}
 				
 				if(vlessUrl.location){
@@ -979,6 +991,43 @@ validOutbound = function(outbound){
 		if(!..table.count(outbound.headers)){
 			outbound.headers = null;	
 		}
+	}
+	
+	if(outbound["client-fingerprint"]){
+		outbound.fingerprint = outbound["client-fingerprint"];
+		outbound["client-fingerprint"] = null;
+	}
+	if(outbound.fp && !outbound.fingerprint){
+		outbound.fingerprint = outbound.fp;
+	}
+	if(outbound.pbk && !outbound.publicKey){
+		outbound.publicKey = outbound.pbk;
+	}
+	if(outbound.sid && !outbound.shortId){
+		outbound.shortId = outbound.sid;
+	}
+	if(outbound.spx && !outbound.spiderX){
+		outbound.spiderX = outbound.spx;
+	}
+	
+	var realityOpts = outbound["reality-opts"];
+	if(realityOpts){
+		if(realityOpts["public-key"]) outbound.publicKey = realityOpts["public-key"];
+		if(realityOpts["short-id"]) outbound.shortId = realityOpts["short-id"];
+		if(realityOpts["spider-x"]) outbound.spiderX = realityOpts["spider-x"];
+		outbound.tls = "reality";
+		outbound["reality-opts"] = null;
+	}
+	
+	var grpcOpts = outbound["grpc-opts"];
+	if(grpcOpts){
+		if(grpcOpts["grpc-service-name"]) outbound.serviceName = grpcOpts["grpc-service-name"];
+		if(grpcOpts["grpc-mode"]) outbound.mode = grpcOpts["grpc-mode"];
+		outbound["grpc-opts"] = null;
+	}
+	
+	if(outbound.flow == "xtls-rprx-direct" || outbound.flow == "xtls-rprx-origin"){
+		outbound.flow = "xtls-rprx-vision";
 	}
 	
 	outbound["http-opts"] = null;

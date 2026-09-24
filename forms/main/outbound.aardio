@@ -12,7 +12,7 @@ btnImportSharedLink={cls="plus";text="导入";left=912;top=471;right=984;bottom=
 btnInsertField={cls="plus";text="插入更多配置字段";left=10;top=0;right=191;bottom=24;align="left";dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=12}};iconText='\uF196 ';notify=1;textPadding={left=30};z=18};
 btnSaveOutbound={cls="plus";text="保 存";left=826;top=410;right=929;bottom=446;align="left";bgcolor=11580047;db=1;disabled=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=22}};iconText='\uF0C7';notify=1;textPadding={left=40};z=16};
 btnUpdateCore={cls="plus";text="下载 / 更新 NaÏveProxy Core";left=637;top=61;right=979;bottom=89;align="left";color=3947580;dr=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-17;name='FontAwesome');padding={left=18}};iconText='\uF0AB';notify=1;textPadding={left=50};z=23};
-cmbNetwork={cls="combobox";left=656;top=97;right=814;bottom=123;dr=1;dt=1;edge=1;items={"tcp";"kcp";"ws";"h2";"quic"};mode="dropdown";z=13};
+cmbNetwork={cls="combobox";left=656;top=97;right=814;bottom=123;dr=1;dt=1;edge=1;items={"tcp";"grpc";"ws";"httpupgrade";"splithttp";"h2";"kcp";"quic"};mode="dropdown";z=13};
 cmbProtocol={cls="combobox";left=656;top=28;right=814;bottom=54;dr=1;dt=1;edge=1;items={"vmess";"vless";"trojan";"trojan-go";"ssr";"shadowsocks";"naive";"socks";"https";"http"};mode="dropdown";z=12};
 cmbSecurity={cls="combobox";left=656;top=140;right=814;bottom=166;dr=1;dt=1;edge=1;items={"auto";"none";"chacha20-poly1305";"aes-128-gcm"};mode="dropdown";z=15};
 editAddress={cls="plus";left=656;top=183;right=878;bottom=207;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);textPadding={bottom=1};z=2};
@@ -64,7 +64,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 		winform.outboundConfig.security = "auto";
 		
 		winform.cmbNetwork.items = {
-			"tcp";"kcp";"h2";"quic";
+			"tcp";"ws";"grpc";"httpupgrade";"splithttp";"h2";"kcp";"quic";
 		}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";
@@ -73,7 +73,7 @@ winform.cmbProtocol.onProtocolChange = function(){
 	}
 	elseif(sel=="shadowsocks"){
 		winform.cmbSecurity.items = {
-			"aes-128-gcm";"aes-256-gcm";"chacha20-poly1305";"chacha20-ietf-poly1305";"none"
+			"aes-128-gcm";"aes-256-gcm";"chacha20-poly1305";"chacha20-ietf-poly1305";"2022-blake3-aes-128-gcm";"2022-blake3-aes-256-gcm";"2022-blake3-chacha20-poly1305";"none"
 		}
 
 		winform.cmbSecurity.selIndex = 1;
@@ -104,18 +104,28 @@ winform.cmbProtocol.onProtocolChange = function(){
 	}
 	elseif(sel=="vless"){
 		winform.cmbSecurity.items = {
-			"none";
+			"none";"tls";"reality";
 		}
 		winform.cmbSecurity.selIndex = 1;
 		winform.outboundConfig.security = "none";
 		
 		winform.cmbNetwork.items = {
-			"tcp";"kcp";"h2";"quic";
+			"tcp";"grpc";"ws";"httpupgrade";"splithttp";"h2";"kcp";"quic";
 		}
 		winform.cmbNetwork.selIndex = 1;
 		winform.outboundConfig.network = "tcp";
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入 GUID");
+	}
+	elseif(sel=="trojan" || sel=="trojan-go"){
+		winform.cmbSecurity.items = { }	
+		winform.outboundConfig.security = null;
+		
+		winform.cmbNetwork.items = {"tcp";"grpc";"ws";"h2";"httpupgrade";"splithttp";};
+		winform.cmbNetwork.selIndex = 1;
+		winform.outboundConfig.network = "tcp";
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
+		winform.editId.setCueBannerText("请输入密码");
 	}
 	elseif(sel=="naive"){
 		winform.cmbNetwork.items = {
@@ -215,23 +225,34 @@ winform.editPs.editBox.onChange = function(){
 
 var editOutboundTip = {
 	address = {"代理服务器地址";"值可以是域名或者IP地址"};
-	alterId = {"额外ID";"仅用于VMESS协议，与服务器一致即可"};
-	aid = {"额外ID(alterId)";"数值,仅用于VMESS协议，与服务器一致即可"};
-	network = {"传输协议(network)";"可选值为tcp,ws等，也可以放 SSR 的 protocol 值"};
-	net = {"传输协议(network)";"可选值为tcp,ws等"};
+	alterId = {"额外ID";"仅用于VMESS协议，新版内核强制为 0"};
+	aid = {"额外ID(alterId)";"数值,仅用于VMESS协议，新版内核强制为 0"};
+	network = {"传输协议(network)";"可选值为 tcp, ws, grpc, httpupgrade, splithttp, h2, kcp, quic 等"};
+	net = {"传输协议(network)";"可选值为 tcp, ws, grpc, httpupgrade, splithttp 等"};
 	type = {"伪装类型";"默认的可选值为none,http等,kcp或quic此字段表示header.type，可选值为 none,srtp,utp,wechat-video,dtls,wireguard"}; 
-	ps = {"备注";"备注"}; 
-	tls = {"是否启用TLS";"可选值为tls,xtls或空值,vless协议省略时默认值为tls"}; 
-	path = {"请求路径";"用于ws,http等协议指定请求路径"}; 
+	ps = {"备注";"备注名称"}; 
+	tls = {"传输安全类型";"可选值为 tls, reality, xtls 或空值"}; 
+	path = {"请求路径";"用于ws,http,httpupgrade,splithttp等协议指定请求路径"}; 
 	httpMethod = {"HTTP请求方法";"用于http协议指定请求方法"}; 
 	headers = {"HTTP请求头";"用于ws,http等协议指定请求头"}; 
-	id = {"密码";"服务器密码"}; 
+	id = {"密码/UUID";"服务器密码或用户 UUID"}; 
 	host = {"主机名";"用于指定http,ws等协议请求头中的主机名"}; 
-	protocol = {"协议";"可选值为 vmess,vless,shadowsocks,trojan,trojan-go 之一"}; 
+	protocol = {"协议";"可选值为 vless, vmess, shadowsocks, trojan, trojan-go 等"}; 
 	port = {"端口";"服务器端口,数值"}; 
-	security = {"加密方式";"可省略,vmess协议默认为auto,vless协议默认为none"};
-	sni = {"TLS服务器名";"TLS客户端请求中的服务器名字段,如果不指定则默认取host或address字段值。"}; 
-	flow = {"流控";"目前仅用于选择 XTLS 的算法,省略时默认值为xtls-rprx-direct"}; 
+	security = {"加密方式";"可省略,vmess默认为auto,vless默认为none"};
+	sni = {"TLS服务器名";"TLS/REALITY 客户端握手域名 (Server Name Indication)"}; 
+	flow = {"流控";"推荐使用 xtls-rprx-vision"}; 
+	publicKey = {"REALITY公钥";"Base64 格式的 REALITY 服务端公钥 (pbk)"};
+	pbk = {"REALITY公钥";"Base64 格式的 REALITY 服务端公钥 (pbk)"};
+	shortId = {"REALITY简短ID";"服务端的 shortId (sid)，十六进制字符串"};
+	sid = {"REALITY简短ID";"服务端的 shortId (sid)，十六进制字符串"};
+	spiderX = {"REALITY爬虫路径";"客户端发起请求时的伪装爬虫路径，默认 /"};
+	spx = {"REALITY爬虫路径";"客户端发起请求时的伪装爬虫路径，默认 /"};
+	fingerprint = {"uTLS指纹";"模拟客户端指纹，可选值：chrome, firefox, safari, ios, android, edge, random, randomized"};
+	fp = {"uTLS指纹";"模拟客户端指纹，可选值：chrome, firefox, safari, ios, android, edge, random, randomized"};
+	serviceName = {"gRPC服务名称";"gRPC 传输协议所指定的 ServiceName"};
+	alpn = {"应用层协商(ALPN)";"TLS 应用层协商协议，如 h2,http/1.1"};
+	allowInsecure = {"允许忽略证书";"布尔值 true/false。仅用于自签名证书的传统 TLS 节点。\n注意：REALITY 协议使用服务端公钥验证，不支持且不需要此项。"};
 	obfs = {"混淆插件";"可选值：plain,http_simple,http_post,tls1.2_ticket_auth ..."}; 
 	obfsParam = {"混淆参数";"SSR 里的 obfs_param"}; 
 	networkParam = {"SSR网络协议参数";"SSR 里的 protocol_param"}; 
@@ -250,6 +271,7 @@ winform.editOutbound.wndproc = function(hwnd,message,wParam,lParam){
 		var n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(%"")[\,\s]*$`); 
 		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(\d+)[\,\s]*$`);
 		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*\{`);
+		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(true|false)[\,\s]*$`);
 		if(editOutboundTip[n]){
 			winform.editOutbound.showInfoTip(editOutboundTip[n][1],editOutboundTip[n][2])
 		}
@@ -258,24 +280,54 @@ winform.editOutbound.wndproc = function(hwnd,message,wParam,lParam){
 	
 import win.ui.menu;
 var insertFieldMenu = { 
-	{ "允许忽略证书:allowInsecure";
+	{ "REALITY 服务端公钥:publicKey";
 		function(id){
-			winform.addOutboundField("allowInsecure",true);
+			winform.addOutboundField("publicKey","");
 		} 
 	};
-	{ "TLS服务器名:sni";
+	{ "REALITY 简短ID:shortId";
+		function(id){
+			winform.addOutboundField("shortId","");
+		} 
+	};
+	{ "REALITY 爬虫路径:spiderX";
+		function(id){
+			winform.addOutboundField("spiderX","/");
+		} 
+	};
+	{ "uTLS 模拟指纹:fingerprint";
+		function(id){
+			winform.addOutboundField("fingerprint","chrome");
+		} 
+	};
+	{ "gRPC 业务名称:serviceName";
+		function(id){
+			winform.addOutboundField("serviceName","");
+		} 
+	};
+	{ "流控:flow (xtls-rprx-vision)";
+		function(id){
+			winform.addOutboundField("flow","xtls-rprx-vision");
+		} 
+	};
+	{ "启用TLS:tls (tls/reality)";
+		function(id){
+			winform.addOutboundField("tls","reality");
+		} 
+	};
+	{ "TLS/REALITY 服务器名:sni";
 		function(id){
 			winform.addOutboundField("sni","");
 		} 
 	};
-	{ "启用TLS:tls";
+	{ "应用层协议协商:alpn";
 		function(id){
-			winform.addOutboundField("tls","xtls");
+			winform.addOutboundField("alpn",{"h2";"http/1.1"});
 		} 
 	};
-	{ "流控:flow";
+	{ "允许忽略证书:allowInsecure";
 		function(id){
-			winform.addOutboundField("flow","xtls-rprx-direct");
+			winform.addOutboundField("allowInsecure",true);
 		} 
 	};
 	{ "多路复用最大连接:concurrency";
@@ -283,7 +335,6 @@ var insertFieldMenu = {
 			winform.addOutboundField("concurrency",4);
 		} 
 	};
-
 	{ "伪装类型:type";
 		function(id){
 			winform.addOutboundField("type","http");

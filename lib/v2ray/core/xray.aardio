@@ -1,4 +1,4 @@
-﻿//xray 内核
+//xray 内核
 import v2ray.core;
 namespace v2ray.core.xray;
 
@@ -61,6 +61,13 @@ updateCore = function(){
 				
 				..io.createDir(coreDir); 
 				fsys.copy(..io.appData("/winXray/temp/xray/xray.exe"),..io.joinpath(coreDir,"v2ray.exe"));  
+				fsys.copy(..io.appData("/winXray/temp/xray/xray.exe"),..io.joinpath(coreDir,"xray.exe"));  
+				if(..io.exist(..io.appData("/winXray/temp/xray/geoip.dat"))){
+					fsys.copy(..io.appData("/winXray/temp/xray/geoip.dat"),..io.joinpath(coreDir,"geoip.dat"));  
+				}
+				if(..io.exist(..io.appData("/winXray/temp/xray/geosite.dat"))){
+					fsys.copy(..io.appData("/winXray/temp/xray/geosite.dat"),..io.joinpath(coreDir,"geosite.dat"));  
+				}
 				
 				self.lastDownloadingCoreFailed = null;
 				return versionTag;

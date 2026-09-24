@@ -1,4 +1,4 @@
-﻿//configJson 内核配置
+//configJson 内核配置
 import config;
 import web.json;
 import inet.url;
@@ -60,8 +60,11 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 	}
 	
 	if(outbound.protocol=="vless"){ 
-		if(!outbound.tls && outbound.port==443) outbound.tls = "tls";
-		if(!outbound.tls) outbound.tls = "tls";
+		var isReality = (outbound.tls == "reality") || (outbound.security == "reality") || (#outbound.publicKey) || (#outbound.pbk);
+		if(!outbound.tls && outbound.port==443 && !isReality) outbound.tls = "tls";
+		if(!outbound.tls && !isReality) outbound.tls = "tls";
+		
+		var effectiveSecurity = isReality ? "reality" : (#outbound.tls ? outbound.tls : null);
 		
 		var mux = (outbound.concurrency !== null) ? {
 			concurrency=outbound.concurrency;
@@ -70,9 +73,19 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			concurrency=8;
 			enabled=true
 		}; 
+		
+		var flow = outbound.flow;
+		if(flow == "xtls-rprx-direct" || flow == "xtls-rprx-origin"){
+			flow = "xtls-rprx-vision";
+		}
+		if(!flow && (effectiveSecurity == "xtls" || isReality)){
+			if(outbound.network == "tcp" || !outbound.network){
+				flow = "xtls-rprx-vision";
+			}
+		}
 			
 		var ob = {
-			mux = outbound.tls != "xtls" ? mux : null;
+			mux = (effectiveSecurity != "xtls" && effectiveSecurity != "reality") ? mux : null;
 			protocol="vless";
 			
 			settings={
@@ -83,8 +96,8 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 						users={
 							{  
 								id=outbound.id;
-								flow=outbound.flow : (outbound.tls == "xtls" ? "xtls-rprx-direct" : null);
-								encryption=( (!#outbound.security) || outbound.security=="auto") ? "none" : outbound.security;  
+								flow=flow;
+								encryption=( (!#outbound.security) || outbound.security=="auto" || outbound.security=="reality") ? "none" : outbound.security;  
 								level=outbound.level : 0;
 							}
 						}
@@ -93,17 +106,27 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			};
 			streamSettings={
 				network=outbound.network : "tcp";
-				security=#outbound.tls ? outbound.tls : null;
-				tlsSettings = (#outbound.tls && outbound.tls != "xtls") ? {
+				security=effectiveSecurity;
+				realitySettings = isReality ? {
+					show = false;
+					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
+					serverName = outbound.sni : outbound.address;
+					publicKey = outbound.publicKey : outbound.pbk : "";
+					shortId = outbound.shortId : outbound.sid : "";
+					spiderX = outbound.spiderX : outbound.spx : "/";
+				} : null;
+				tlsSettings = (effectiveSecurity == "tls") ? {
 					allowInsecure = !!outbound.allowInsecure;
 					serverName = outbound.sni : outbound.address;
 					alpn = outbound.alpn;
+					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
 					disableSessionResumption = outbound.disableSessionResumption;
 				} : null;
-				xtlsSettings = outbound.tls == "xtls" ? {
+				xtlsSettings = (effectiveSecurity == "xtls") ? {
 					allowInsecure = !!outbound.allowInsecure;
 					serverName = outbound.sni : outbound.address;
 					alpn = outbound.alpn;
+					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
 					disableSessionResumption = outbound.disableSessionResumption;
 				} : null;
 			};
@@ -121,6 +144,25 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 					ob.streamSettings.wsSettings.headers = {}
 				}
 				ob.streamSettings.wsSettings.headers.Host = outbound.host;
+			}
+		}
+		elseif( outbound.network == "grpc" ){
+			ob.streamSettings.grpcSettings = {
+				serviceName = outbound.serviceName : outbound.path : "";
+				multiMode = (outbound.mode == "multi") || (outbound.multiMode == true);
+			}
+		}
+		elseif( outbound.network == "httpupgrade" ){
+			ob.streamSettings.httpupgradeSettings = {
+				path = outbound.path : "/";
+				host = outbound.host;
+			}
+		}
+		elseif( (outbound.network == "splithttp") || (outbound.network == "xhttp") ){
+			ob.streamSettings.splithttpSettings = {
+				path = outbound.path : "/";
+				host = outbound.host;
+				mode = outbound.mode;
 			}
 		}
 		elseif( (outbound.network == "http") || (outbound.network == "h2")  ){
@@ -221,7 +263,9 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 				security=#outbound.tls ? outbound.tls : null;
 				tlsSettings = #outbound.tls ? {
 					allowInsecure = !!outbound.allowInsecure;
-					serverName = outbound.sni;
+					serverName = outbound.sni : outbound.address;
+					alpn = outbound.alpn;
+					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
 				} : null
 			};
 			tag="proxy"
@@ -238,6 +282,25 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 					ob.streamSettings.wsSettings.headers = {}
 				}
 				ob.streamSettings.wsSettings.headers.Host = outbound.host;
+			}
+		}
+		elseif( outbound.network == "grpc" ){
+			ob.streamSettings.grpcSettings = {
+				serviceName = outbound.serviceName : outbound.path : "";
+				multiMode = (outbound.mode == "multi") || (outbound.multiMode == true);
+			}
+		}
+		elseif( outbound.network == "httpupgrade" ){
+			ob.streamSettings.httpupgradeSettings = {
+				path = outbound.path : "/";
+				host = outbound.host;
+			}
+		}
+		elseif( (outbound.network == "splithttp") || (outbound.network == "xhttp") ){
+			ob.streamSettings.splithttpSettings = {
+				path = outbound.path : "/";
+				host = outbound.host;
+				mode = outbound.mode;
 			}
 		}
 		elseif( (outbound.network == "http") || (outbound.network == "h2")  ){
@@ -306,6 +369,10 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 	}
 	elseif(outbound.protocol=="trojan" || outbound.protocol=="trojan-go"){
 		outbound.tls = #outbound.tls ? outbound.tls : "tls";
+		var trojanFlow = outbound.flow;
+		if(trojanFlow == "xtls-rprx-direct" || trojanFlow == "xtls-rprx-origin"){
+			trojanFlow = "xtls-rprx-vision";
+		}
 		var ob = {
 			mux = (outbound.concurrency !== null) ? {
 				concurrency=outbound.concurrency;
@@ -324,7 +391,7 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 						port=outbound.port; 
 						level=outbound.level : 0; 
 						encryption=outbound.security;  
-						flow=outbound.flow : (outbound.tls == "xtls" ? "xtls-rprx-direct" : null);
+						flow=trojanFlow;
 					}
 				};
 			};
@@ -334,7 +401,9 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 				
 				tlsSettings =  (outbound.tls === "tls") ? {
 					allowInsecure = !!outbound.allowInsecure;
-					serverName = outbound.sni;
+					serverName = outbound.sni : outbound.address;
+					alpn = outbound.alpn;
+					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
 				} : null
 			};
 			tag="proxy"
@@ -351,6 +420,12 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 					ob.streamSettings.wsSettings.headers = {}
 				}
 				ob.streamSettings.wsSettings.headers.Host = outbound.host;
+			}
+		}
+		elseif( outbound.network == "grpc" ){
+			ob.streamSettings.grpcSettings = {
+				serviceName = outbound.serviceName : outbound.path : "";
+				multiMode = (outbound.mode == "multi") || (outbound.multiMode == true);
 			}
 		}
 		..table.assign(proxyOutboundInCore,ob); 
