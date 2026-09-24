@@ -59,8 +59,15 @@
     "routing": {
         "domainStrategy": "IPIfNonMatch",
         "rules": [
-            // 备用广告拦截规则（需要时取消注释）：
-            // { "domain": ["geosite:category-ads-all"], "outboundTag": "block", "type": "field" },
+            // 1. API 内部通信规则（置顶）
+            {
+                "inboundTag": [
+                    "api"
+                ],
+                "outboundTag": "api",
+                "type": "field"
+            },
+            // 2. 国内域名直连
             {
                 "domain": [
                     "geosite:cn"
@@ -68,6 +75,7 @@
                 "outboundTag": "direct",
                 "type": "field"
             },
+            // 3. 国内 IP 及私有局域网 IP 直连
             {
                 "ip": [
                     "geoip:cn",
@@ -75,14 +83,9 @@
                 ],
                 "outboundTag": "direct",
                 "type": "field"
-            },
-            {
-                "inboundTag": [
-                    "api"
-                ],
-                "outboundTag": "api",
-                "type": "field"
             }
+            // 4. 备用广告拦截规则（需要开启时，去掉前面两行的 // 注释并在上一行末尾添加逗号）：
+            // ,{ "domain": ["geosite:category-ads-all"], "outboundTag": "block", "type": "field" }
         ]
     }
 }
