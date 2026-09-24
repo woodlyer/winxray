@@ -52,7 +52,7 @@ var activeOutbound = function(outboundIndex,outboundAddress,enableRetry,timerTes
 		var started,err = v2ray.core.restart(frmXray.edit,outbound);
 		startTesting = started;
 		if(!started){
-			frmXray.edit.print("启动 V2Ray 错误",err:""); 
+			frmXray.edit.print("启动 Xray 错误",err:""); 
 			frmXray.btnTcping.disabledText = null;
 			return false;
 		}

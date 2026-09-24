@@ -1,4 +1,4 @@
-﻿//ssr 内核进程（SSR）
+//ssr 内核进程（SSR）
 import wsock.tcp.server;
 import v2ray.core.ssrJson;
 import process.popen;
@@ -116,6 +116,11 @@ downloadCore = function(){
  
  
 getPath = function(hwnd){
+	var path = ..io.fullpath("/xray-core/ssr-core/ssr-client.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
 	var path = ..io.fullpath("/v2ray-core/ssr-core/ssr-client.exe");
 	if(..io.exist(path)){
 		return path;
@@ -135,6 +140,11 @@ getPath = function(hwnd){
 } 
 
 getCoreDir = function(hwnd){
+	var path = ..io.fullpath("/xray-core/ssr-core/ssr-client.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/xray-core/ssr-core/");
+	}
+
 	var path = ..io.fullpath("/v2ray-core/ssr-core/ssr-client.exe");
 	if(..io.exist(path)){
 		return ..io.fullpath("/v2ray-core/ssr-core/");
@@ -145,16 +155,31 @@ getCoreDir = function(hwnd){
 		return ..io.appData("/winXray/ssr-core/");;;
 	}
 	
+	var path = ..io.fullpath("/xray-core/xray.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/xray-core/ssr-core/");
+	}
+
 	var path = ..io.fullpath("/v2ray-core/v2ray.exe");
 	if(..io.exist(path)){
 		return ..io.fullpath("/v2ray-core/ssr-core/");
 	}
 		
+	var path = ..io.appData("/winXray/core/xray.exe");
+	if(..io.exist(path)){
+		return ..io.appData("/winXray/ssr-core/");
+	}
+
 	var path = ..io.appData("/winXray/core/v2ray.exe");
 	if(..io.exist(path)){
 		return ..io.appData("/winXray/ssr-core/");
 	}
 	
+	var path = ..io.fullpath("/xray-core/");
+	if(..io.exist(path)){
+		return ..io.fullpath("/xray-core/ssr-core/");
+	}
+
 	var path = ..io.fullpath("/v2ray-core/");
 	if(..io.exist(path)){
 		return ..io.fullpath("/v2ray-core/ssr-core/");

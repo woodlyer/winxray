@@ -55,12 +55,12 @@ updateCore = function(){
 				sysProxy.reset(false);
 
 				import process.file;
+				process.file.terminate(..io.joinpath(coreDir,"xray.exe")); 
 				process.file.terminate(..io.joinpath(coreDir,"v2ray.exe")); 
 				process.file.terminate(..io.joinpath(coreDir,"v2ctl.exe")); 
 				fsys.delete(..io.joinpath(coreDir,"v2ctl.exe"));
 				
 				..io.createDir(coreDir); 
-				fsys.copy(..io.appData("/winXray/temp/xray/xray.exe"),..io.joinpath(coreDir,"v2ray.exe"));  
 				fsys.copy(..io.appData("/winXray/temp/xray/xray.exe"),..io.joinpath(coreDir,"xray.exe"));  
 				if(..io.exist(..io.appData("/winXray/temp/xray/geoip.dat"))){
 					fsys.copy(..io.appData("/winXray/temp/xray/geoip.dat"),..io.joinpath(coreDir,"geoip.dat"));  

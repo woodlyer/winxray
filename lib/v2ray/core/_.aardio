@@ -47,7 +47,7 @@ restart = function(editor,outbound){
 	var corePath = getPath(editor.hwnd);
 	if(!corePath){ 
 		v2RayStarting = false;
-		return false,"启动失败,未找到 v2ray.exe"; 
+		return false,"启动失败,未找到 Xray Core (xray.exe)"; 
 	}  
 	
 	// 先不要断开当前代理，使用当前代理下载会更快。
@@ -130,24 +130,26 @@ restart = function(editor,outbound){
 		}
 		
 		var err;
-		//prcsV2Ray,err = ..process.popen(corePath,"-c=config.json" );
-		prcsV2Ray,err = ..process.popen(corePath, corePath," run", "-c", "config.json" );
+		prcsV2Ray,err = ..process.popen(corePath, corePath, "run", "-c", "config.json" );
+		if(!prcsV2Ray){
+			prcsV2Ray,err = ..process.popen(corePath, corePath, "-c", "config.json" );
+		}
 		..publish("uiCommand.print", corePath);																		   
 		if(!prcsV2Ray){
 			if( nexCore ){ nexCore.stop(); }
 	
-			..publish("uiCommand.print",err:"启动 V2Ray Core 时遇到未知错误!");
+			..publish("uiCommand.print",err:"启动 Xray Core 时遇到未知错误!");
 			
 			if(!..process().isWow64()){
 				if(..process.isExe(corePath)!="PE32"){
 					..io.remove(corePath);
 					if(!..io.exist(corePath)){
-						..publish("uiCommand.print","当前操作系统是32位，已删除无效的64位 V2Ray Core，正在下载32位 V2Ray Core");
+						..publish("uiCommand.print","当前操作系统是32位，已删除无效的64位 Xray Core，正在下载32位 Xray Core");
 						v2RayStarting = false;
 						return restart(editor,outbound)	
 					}
 					else {
-						..publish("uiCommand.print","当前操作系统是32位，但是找到的 V2Ray Core 是64位，请重新下载32位 V2Ray Core");
+						..publish("uiCommand.print","当前操作系统是32位，但是找到的 Xray Core 是64位，请重新下载32位 Xray Core");
 					} 
 				} 	
 			}
@@ -215,25 +217,19 @@ var getV2RayCoreUrl = function(){
 } 
 
 getPath = function(hwnd){
-	var path = ..io.fullpath("/v2ray-core/v2ray.exe");
-	if(..io.exist(path)){
-		return path;
-	}
-		
-	var path = ..io.appData("/winXray/core/v2ray.exe");
-	if(..io.exist(path)){
-		return path;
-	}
-
-	var path = ..io.fullpath("/xray-core/xray.exe");
-	if(..io.exist(path)){
-		..io.rename("/xray-core/","/v2ray-core/") 
-	}
-
-	var path = ..io.fullpath("/v2ray-core/xray.exe");
-	if(..io.exist(path)){
-		..io.rename("/v2ray-core/xray.exe","/v2ray-core/v2ray.exe")
-		return ..io.fullpath("/v2ray-core/v2ray.exe");
+	var checkPaths = {
+		..io.fullpath("/xray-core/xray.exe");
+		..io.fullpath("/v2ray-core/xray.exe");
+		..io.appData("/winXray/core/xray.exe");
+		..io.fullpath("/xray-core/v2ray.exe");
+		..io.fullpath("/v2ray-core/v2ray.exe");
+		..io.appData("/winXray/core/v2ray.exe");
+	};
+	
+	for(i=1;#checkPaths;1){
+		if(..io.exist(checkPaths[i])){
+			return checkPaths[i];
+		}
 	}
 	
 	if(self.lastDownloadingCoreFailed){
@@ -245,7 +241,7 @@ getPath = function(hwnd){
 	 
 	if(!url) {
 		..publish("uiCommand.print","请下载 Xray Core 到以下路径:");
-		..publish("uiCommand.print",path);
+		..publish("uiCommand.print",..io.appData("/winXray/core/xray.exe"));
 		
 		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = true;
@@ -259,11 +255,16 @@ getPath = function(hwnd){
 			
 		self.lastDownloadingCoreFailed = null;
 		..mainForm.disabled = false;
-		if(..io.exist(..io.appData("/winXray/core/xray.exe")) && !..io.exist(..io.appData("/winXray/core/v2ray.exe"))){
-			import fsys;
-			fsys.copy(..io.appData("/winXray/core/xray.exe"), ..io.appData("/winXray/core/v2ray.exe"));
+		
+		var downloadedPath = ..io.appData("/winXray/core/xray.exe");
+		if(..io.exist(downloadedPath)){
+			return downloadedPath;
 		}
-		return ..io.exist(path);
+		var fallbackPath = ..io.appData("/winXray/core/v2ray.exe");
+		if(..io.exist(fallbackPath)){
+			return fallbackPath;
+		}
+		return null;
 	}
 	else {
 		..mainForm.disabled = false;
@@ -274,26 +275,29 @@ getPath = function(hwnd){
 		
 		..publish("uiCommand.print","下载后请解压到以下目录内:");
 		..publish("uiCommand.print",..io.appData("/winXray/core/"));
-		
-		//import process;
-		//process.execute(..io._exepath,"/github","runas");
 	}  
 } 
 
 getCoreDir = function(hwnd){
-	var path = ..io.fullpath("/v2ray-core/v2ray.exe");
-	if(..io.exist(path)){
-		return ..io.fullpath("/v2ray-core/");
-	}
-		
-	var path = ..io.appData("/winXray/core/v2ray.exe");
-	if(..io.exist(path)){
-		return ..io.appData("/winXray/core/");;
+	var checkPaths = {
+		..io.fullpath("/xray-core/xray.exe");
+		..io.fullpath("/v2ray-core/xray.exe");
+		..io.appData("/winXray/core/xray.exe");
+		..io.fullpath("/xray-core/v2ray.exe");
+		..io.fullpath("/v2ray-core/v2ray.exe");
+		..io.appData("/winXray/core/v2ray.exe");
+	};
+	for(i=1;#checkPaths;1){
+		if(..io.exist(checkPaths[i])){
+			return ..io.splitpath(checkPaths[i]).dir;
+		}
 	}
 	
-	var path = ..io.fullpath("/v2ray-core/");
-	if(..io.exist(path)){
-		return path;
+	if(..io.exist(..io.fullpath("/xray-core/"))){
+		return ..io.fullpath("/xray-core/");
+	}
+	if(..io.exist(..io.fullpath("/v2ray-core/"))){
+		return ..io.fullpath("/v2ray-core/");
 	}
 	
 	return ..io.appData("/winXray/core/");
@@ -330,13 +334,12 @@ updateCore = function(){
 				sysProxy.reset(false);
 
 				import process.file;
-				process.file.terminate(..io.joinpath(coreDir,"v2ray.exe")); 
 				process.file.terminate(..io.joinpath(coreDir,"xray.exe")); 
+				process.file.terminate(..io.joinpath(coreDir,"v2ray.exe")); 
 				process.file.terminate(..io.joinpath(coreDir,"v2ctl.exe")); 
 				fsys.delete(..io.joinpath(coreDir,"v2ctl.exe"));
 				
 				..io.createDir(coreDir); 
-				fsys.copy(tempExe,..io.joinpath(coreDir,"v2ray.exe")); 
 				fsys.copy(tempExe,..io.joinpath(coreDir,"xray.exe")); 
 				if(..io.exist(..io.appData("/winXray/temp/xray/geoip.dat"))){
 					fsys.copy(..io.appData("/winXray/temp/xray/geoip.dat"),..io.joinpath(coreDir,"geoip.dat"));
