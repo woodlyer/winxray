@@ -3,10 +3,10 @@ import fonts.fontAwesome;
 /*DSG{{*/
 var frmXray = win.form(text="winXray ";right=959;bottom=591;bgcolor=16777215)
 frmXray.add(
-btnImportServerFromClipBd={cls="plus";text="批量导入链接";left=290;top=367;right=410;bottom=397;align="left";db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=12}};iconText='\uF196 ';notify=1;textPadding={left=30};z=8};
+btnEditPacOrUwp={cls="plus";text="编辑 PAC";left=285;top=367;right=385;bottom=397;align="left";db=1;dl=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=10}};iconText='\uF1C4';notify=1;textPadding={left=26};z=7};
 btnStopCore={cls="plus";text="启动服务";left=625;top=367;right=732;bottom=397;align="left";db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=10}};iconText='\uF04B';notify=1;textPadding={left=26};z=10};
 btnTcping={cls="plus";text="检测并连接最快服务器";left=740;top=366;right=946;bottom=398;align="left";bgcolor=11580047;border={radius=4};db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=18}};iconText='\uF012';notify=1;textPadding={left=42};z=3};
-chkAutoTest={cls="plus";text="异常自动重连 ";left=420;top=367;right=536;bottom=397;align="left";db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=12}};iconText='\uF0C8';notify=1;textPadding={left=30};z=9};
+chkAutoTest={cls="plus";text="异常自动重连 ";left=395;top=367;right=515;bottom=397;align="left";db=1;dl=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=12}};iconText='\uF0C8';notify=1;textPadding={left=30};z=9};
 edit={cls="edit";left=6;top=405;right=953;bottom=585;bgcolor=0;color=16777215;db=1;dl=1;dr=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=2};
 listview={cls="listview";left=4;top=5;right=954;bottom=358;db=1;dl=1;dr=1;dt=1;edge=1;fullRow=1;gridLines=1;z=1};
 radioProxy={cls="radiobutton";text="全局代理";left=110;top=369;right=192;bottom=395;bgcolor=16777215;db=1;dl=1;font=LOGFONT(h=-13);z=4};
@@ -533,7 +533,7 @@ frmXray.listview.onnotify = function(id,code,ptr){
 				});
 				
 				popmenu.add("自剪贴板批量导入分享链接、订阅源",function(id){
-					frmXray.btnImportServerFromClipBd.oncommand();
+					frmXray.importServerFromClipBd();
 				});
 				
 				popmenu.add('立即更新所有订阅源',function(id){
@@ -609,7 +609,7 @@ frmXray.listview.onnotify = function(id,code,ptr){
 			});
 			
 			popmenu.add("自剪贴板批量导入分享链接、订阅源",function(id){
-				frmXray.btnImportServerFromClipBd.oncommand();
+				frmXray.importServerFromClipBd();
 			});
 			 
 			var subscribeUrl = config.proxy.outbounds[currentIdx][["subscribeUrl"]];
@@ -1008,7 +1008,8 @@ subscribe("v2RayCore.restarted",function(socksProxyPort,httpProxPort){
 })
 frmXray.updateToggleCoreButton();
 
-subscribe("uiCommand.showPacForm",function(...){
+frmXray.btnEditPacOrUwp.skin(style.plainButton)
+frmXray.btnEditPacOrUwp.oncommand = function(id,event){
 	if(frmPac && win.isWindow(frmPac.hwnd)){
 		if( win.isIconic(frmPac.hwnd) ) win.show(frmPac.hwnd,9/*_SW_RESTORE*/ );
 		if( !win.isVisible(frmPac.hwnd) ) win.show(frmPac.hwnd,0x1/*_SW_NORMAL*/ );
@@ -1018,6 +1019,10 @@ subscribe("uiCommand.showPacForm",function(...){
 
 	frmPac = ..mainForm.loadForm("\forms\main\pac.aardio");
 	frmPac.show();
+}
+
+subscribe("uiCommand.showPacForm",function(...){
+	frmXray.btnEditPacOrUwp.oncommand();
 } )
 
 subscribe("uiCommand.print",function(...){
@@ -1025,8 +1030,7 @@ subscribe("uiCommand.print",function(...){
 } )
 
 import v2ray.outbounds;
-frmXray.btnImportServerFromClipBd.skin(style.plainButton)
-frmXray.btnImportServerFromClipBd.oncommand = function(id,event){
+frmXray.importServerFromClipBd = function(){
 	var str = ..win.clip.read();
 	if(str){  
 		str = ..string.trim(str,'"\'\t\r\n '); 
