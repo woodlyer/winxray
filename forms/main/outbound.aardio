@@ -684,6 +684,9 @@ winform.setOutboundConfig = function(cfg){
 			}
 		}
 	}
+	if(cfg.allowInsecure === null){
+		cfg.allowInsecure = true;
+	}
     winform.cmbProtocol.selText = cfg.protocol;
 	winform.cmbProtocol.onListChange();
 	
@@ -700,6 +703,7 @@ winform.setOutboundConfig({
 	port = 443;
 	protocol = "vmess";
 	network = "tcp";
+	allowInsecure = true;
 });
 winform.btnAddOutbound.skin(style.primaryButton);
 winform.btnSaveOutbound.skin(style.button);
