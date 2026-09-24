@@ -322,6 +322,10 @@ frmXray.btnTcping.oncommand = function(id,event){
 		} 
 
 		var failedCount = 0;
+		var bestCandidate = null;
+		var connectTimerId = null;
+		frmXray.validOutbounds = {};
+		
 		frmXray.onTcpingReturn = function(outboundIndex,address,succeeded,speedText){
 			if(address!=frmXray.listview.getItemText(outboundIndex,2)){
 				return; 
@@ -329,29 +333,36 @@ frmXray.btnTcping.oncommand = function(id,event){
 			frmXray.listview.setItemText(speedText,outboundIndex,7);
 			
 			if(succeeded){
-				frmXray.listview.setItemText(speedText,outboundIndex,7);
-				frmXray.validOutbounds = {}
-				frmXray.onTcpingReturn = function(outboundIndex,address,succeeded,speedText){
-					if(address!=frmXray.listview.getItemText(outboundIndex,2)){
-						return; 
-					} 
-					
-					frmXray.listview.setItemText(speedText,outboundIndex,7);
-					if(succeeded) { 
-						table.push(frmXray.validOutbounds,{outboundIndex;address});
-					}
-					else{
-						failedCount++;
-						if(failedCount==#items) {
-							frmXray.onTcpingFailed();
-						}
-					}
+				var speedVal = tonumber(string.match(speedText, "([\d\.]+)")) : 999;
+				
+				if(connectTimerId == -1){
+					table.push(frmXray.validOutbounds,{outboundIndex;address});
+					return;
 				}
-				activeOutbound(outboundIndex,address,#items>1);	
+				
+				if(!bestCandidate || (speedVal < bestCandidate.speed) || (math.abs(speedVal - bestCandidate.speed) < 0.005 && outboundIndex < bestCandidate.index)){
+					bestCandidate = { index = outboundIndex; address = address; speed = speedVal };
+				}
+				table.push(frmXray.validOutbounds,{outboundIndex;address});
+				
+				if(!connectTimerId){
+					connectTimerId = frmXray.setTimeout(
+						function(){
+							connectTimerId = -1;
+							if(bestCandidate){
+								activeOutbound(bestCandidate.index, bestCandidate.address, #items>1);
+							}
+						}, 80
+					);
+				}
 			}
 			else{
 				failedCount++;
 				if(failedCount==#items) {
+					if(connectTimerId && connectTimerId != -1){
+						frmXray.clearTimeout(connectTimerId);
+						connectTimerId = -1;
+					}
 					frmXray.onTcpingFailed(); 
 				}
 			}
