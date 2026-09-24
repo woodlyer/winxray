@@ -591,11 +591,21 @@ frmXray.listview.onnotify = function(id,code,ptr){
 						
 						frmXray.btnTcping.disabledText = null;
 						
-						for b,v in table.eachIndex(config.proxy.outbounds){
-							frmXray.listview.setItemText("",b,8);
-						}
 						activeOutbound(currentIdx,frmXray.listview.getItemText(currentIdx,2),false)
 					}
+				});
+
+				popmenu.add('上移服务器( Ctrl+Up / Alt+Up )',function(id){
+					frmXray.listview.moveUp();
+				});
+				popmenu.add('下移服务器( Ctrl+Down / Alt+Down )',function(id){
+					frmXray.listview.moveDown();
+				});
+				popmenu.add('置顶服务器',function(id){
+					frmXray.listview.moveToTop();
+				});
+				popmenu.add('置底服务器',function(id){
+					frmXray.listview.moveToBottom();
 				});
 
 				popmenu.add();
@@ -876,6 +886,103 @@ frmXray.listview.sortBySpeed = function () {
 		frmXray.listview.setItemText("活动服务器：正常",frmXray.listview.activeOutboundIndex,8)
 	} 
 	frmXray.listview.setColumnImage(7, desc ? 1 : 0);
+}
+
+frmXray.listview.moveItem = function(fromIndex, toIndex){
+	var outbounds = config.proxy.outbounds;
+	if(!fromIndex || !toIndex || fromIndex == toIndex || fromIndex < 1 || fromIndex > #outbounds || toIndex < 1 || toIndex > #outbounds){
+		return;
+	}
+	
+	var activeIndex = frmXray.listview.activeOutboundIndex;
+	var targetActive = null;
+	if(activeIndex == fromIndex){
+		targetActive = toIndex;
+	}
+	elseif(fromIndex < toIndex && activeIndex > fromIndex && activeIndex <= toIndex){
+		targetActive = activeIndex - 1;
+	}
+	elseif(fromIndex > toIndex && activeIndex >= toIndex && activeIndex < fromIndex){
+		targetActive = activeIndex + 1;
+	}
+	else {
+		targetActive = activeIndex;
+	}
+	
+	var speeds = {};
+	for(i=1;#outbounds;1){
+		speeds[i] = frmXray.listview.getItemText(i, 7);
+	}
+	var movedSpeed = table.remove(speeds, fromIndex);
+	table.insert(speeds, movedSpeed, toIndex);
+	
+	var item = table.remove(outbounds, fromIndex);
+	table.insert(outbounds, item, toIndex);
+	
+	config.proxy.outbounds = outbounds;
+	config.proxy.save();
+	
+	outbounds.fields = {"protocol";"address";"port";"security";"network";"ps";}
+	frmXray.listview.setTable(outbounds);
+	for(i=1;#outbounds;1){
+		if(#speeds[i]) frmXray.listview.setItemText(speeds[i], i, 7);
+	}
+	frmXray.listview.setSelected(toIndex);
+	frmXray.listview.activeOutboundIndex = targetActive;
+	if(targetActive){
+		frmXray.listview.setItemText("活动服务器：正常", targetActive, 8);
+	}
+}
+
+frmXray.listview.moveUp = function(){
+	var sel = frmXray.listview.selIndex;
+	if(sel && sel > 1){
+		frmXray.listview.moveItem(sel, sel - 1);
+	}
+}
+
+frmXray.listview.moveDown = function(){
+	var sel = frmXray.listview.selIndex;
+	if(sel && sel < #config.proxy.outbounds){
+		frmXray.listview.moveItem(sel, sel + 1);
+	}
+}
+
+frmXray.listview.moveToTop = function(){
+	var sel = frmXray.listview.selIndex;
+	if(sel && sel > 1){
+		frmXray.listview.moveItem(sel, 1);
+	}
+}
+
+frmXray.listview.moveToBottom = function(){
+	var sel = frmXray.listview.selIndex;
+	if(sel && sel < #config.proxy.outbounds){
+		frmXray.listview.moveItem(sel, #config.proxy.outbounds);
+	}
+}
+
+frmXray.listview.translateAccelerator = function(msg){
+	var vk = msg.wParam;
+	if( (msg.message == 0x100/*_WM_KEYDOWN*/) || (msg.message == 0x104/*_WM_SYSKEYDOWN*/) ){
+		var ctrl = ::GetKeyState(0x11/*_VK_CONTROL*/) < 0;
+		var alt = ::GetKeyState(0x12/*_VK_MENU*/) < 0;
+		if( (ctrl || alt) && vk == 0x26/*_VK_UP*/ ){
+			frmXray.listview.moveUp();
+			return true;
+		}
+		elseif( (ctrl || alt) && vk == 0x28/*_VK_DOWN*/ ){
+			frmXray.listview.moveDown();
+			return true;
+		}
+		elseif( vk == 0x0D/*_VK_RETURN*/ ){
+			var sel = frmXray.listview.selIndex;
+			if(sel){
+				activeOutbound(sel,frmXray.listview.getItemText(sel,2),false);
+				return true;
+			}
+		}
+	}
 }
 
 import win.imageList;
