@@ -485,19 +485,23 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			tag="proxy"
 		};
 			
-		if(#outbound.id){
+		if(#outbound.id && outbound.id != "请输入 用户名:密码" && outbound.id != "请输入密码" && outbound.id != "请输入 GUID"){
 			var user,password = ..string.match(outbound.id,"([^\:]+)\:(.+)");
 			if(user && password){
 				ob.settings.servers[1].users = {
-					user = user;
-					password = password;
-					level = outbound.level : 0;
+					{
+						user = user;
+						password = password;
+						level = outbound.level : 0;
+					}
 				}
 			}
 			else{
 				ob.settings.servers[1].users = {
-					user = outbound.id; 
-					level = outbound.level : 0;
+					{
+						user = outbound.id; 
+						level = outbound.level : 0;
+					}
 				}
 			}
 		}
@@ -525,17 +529,21 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			tag="proxy"
 		};
 			
-		if(#outbound.id){
+		if(#outbound.id && outbound.id != "请输入 用户名:密码" && outbound.id != "请输入密码" && outbound.id != "请输入 GUID"){
 			var user,password = ..string.match(outbound.id,"([^\:]+)\:(.+)");
 			if(user && password){
 				ob.settings.servers[1].users = {
-					user = user;
-					password = password; 
+					{
+						user = user;
+						password = password; 
+					}
 				}
 			}
 			else{
 				ob.settings.servers[1].users = {
-					user = outbound.id;  
+					{
+						user = outbound.id;  
+					}
 				}
 			}
 		}

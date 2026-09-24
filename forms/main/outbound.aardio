@@ -43,7 +43,13 @@ winform.syncData = function(){
     if(#winform.cmbSecurity.selText) winform.outboundConfig.security = winform.cmbSecurity.selText;
     if(#winform.editAddress.text) winform.outboundConfig.address = winform.editAddress.text;
     if(#winform.editPort.text) winform.outboundConfig.port = tonumber(winform.editPort.text);
-    if(#winform.editId.text) winform.outboundConfig.id = winform.editId.text;
+    var idText = string.trim(winform.editId.text : "");
+    if(#idText && idText != "请输入 用户名:密码" && idText != "请输入密码" && idText != "请输入 GUID"){
+        winform.outboundConfig.id = idText;
+    }
+    else {
+        winform.outboundConfig.id = null;
+    }
     if(winform.editPs.text!==null) winform.outboundConfig.ps = winform.editPs.text;
 }
 
