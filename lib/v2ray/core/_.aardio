@@ -1,4 +1,4 @@
-﻿//内核进程
+//内核进程
 import v2ray.core.ssr;
 import v2ray.core.naive;
 import wsock.tcp.server;
@@ -182,6 +182,10 @@ stop = function(){
 
 	import v2ray.github;
    	v2ray.github.setProxy(false);
+}
+
+isRunning = function(){
+	return !!prcsV2Ray;
 }
 
 var getV2RayCoreUrl = function(){

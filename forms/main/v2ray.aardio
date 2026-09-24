@@ -953,27 +953,63 @@ frmXray.radioProxy.oncommand = switchProxyMode;
 frmXray.radioProxyDirect.oncommand = switchProxyMode;
 
 import win.dlg.message; 
+frmXray.updateToggleCoreButton = function(running){
+	if(running === null) running = v2ray.core.isRunning();
+	if(running){
+		frmXray.btnStopCore.text = "停止";
+		frmXray.btnStopCore.iconText = '\uF04D';
+	}
+	else {
+		frmXray.btnStopCore.text = "启动";
+		frmXray.btnStopCore.iconText = '\uF04B';
+	}
+}
+
 frmXray.btnStopCore.skin(style.plainButton)
 frmXray.btnStopCore.oncommand = function(id,event){
-	v2ray.core.stop();
-	
-	frmXray.listview.activeOutboundIndex = null;
-	frmXray.listview.activeOutboundAddress = null;
-	for b,v in table.eachIndex(config.proxy.outbounds){
-		frmXray.listview.setItemText("",b,8);
+	if(v2ray.core.isRunning()){
+		v2ray.core.stop();
+		
+		frmXray.listview.activeOutboundIndex = null;
+		frmXray.listview.activeOutboundAddress = null;
+		for b,v in table.eachIndex(config.proxy.outbounds){
+			frmXray.listview.setItemText("",b,8);
+		}
+		
+		frmXray.autoTesting = false;
+		frmXray.btnTcping.disabledText = null;
+		..publish("activeOutbound",false);
+		
+		sysProxy.switchToDirectMode();
+		frmXray.radioProxyDirect.checked = true;
+		frmXray.radioProxyPac.checked = false;
+		frmXray.radioProxy.checked = false;
+		
+		frmXray.updateToggleCoreButton(false);
+		frmXray.edit.print("已停止代理内核服务，释放端口。");
 	}
-	
-	frmXray.autoTesting = false;
-	frmXray.btnTcping.disabledText = null;
-	..publish("activeOutbound",false);
-	
-	sysProxy.switchToDirectMode();
-	frmXray.radioProxyDirect.checked = true;
-	frmXray.radioProxyPac.checked = false;
-	frmXray.radioProxy.checked = false;
-	
-	frmXray.edit.print("已停止代理内核服务，释放端口。");
+	else {
+		var items = frmXray.listview.items;
+		if(!#items){
+			frmXray.msgWarn("请先添加服务器节点");
+			return;
+		}
+		
+		var selIdx = frmXray.listview.selIndex;
+		if(!selIdx || selIdx < 1 || selIdx > #items){
+			selIdx = 1;
+		}
+		
+		var addr = frmXray.listview.getItemText(selIdx, 2);
+		activeOutbound(selIdx, addr, false);
+		frmXray.updateToggleCoreButton(true);
+	}
 }
+
+subscribe("v2RayCore.restarted",function(socksProxyPort,httpProxPort){
+	frmXray.updateToggleCoreButton(true);
+})
+frmXray.updateToggleCoreButton();
 
 frmXray.btnEditPacOrUwp.skin(style.plainButton)
 frmXray.btnEditPacOrUwp.oncommand = function(id,event){
