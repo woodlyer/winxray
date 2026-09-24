@@ -1,29 +1,62 @@
 
-WinXray是一个Windows平台上非常好用的软件，原版版本号开发到3.8。  
-支持很多协议，支持订阅。但是原作者已经弃坑（原因你懂的）。   
-原地址是 https://www.github.com/win-xray/win-xray  
-现在github上能搜到的都不是原作者的作品，甚至有一些假冒官方，比如：https://github.com/TheMRLL/WinXray 等等一大堆。  
+WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版版本号开发到 3.8（原地址已失效）。  
+本项目在原有基础上持续修复与演进，全面适配新版 Xray-core、REALITY 等主流协议，提升稳定性和交互体验。
 
-WinXray是一个壳，底层的工作主要依赖V2Ray，随着时代的进步，V2Ray已经发生了翻天覆地的变化，原有的WinXray开始时间比较短，有一点点小问题。  
-本项目在原有基础上稍微进行了修改。  
+---
 
-本版本集成了路由规则，在Core配置中增加了针对大陆地区域名的direct访问，可以避免访问时绕过外网。
-```
- {
-    "domain":[
-              "geosite:cn"
-          ],
-          "outboundTag":"direct",
-          "type":"field"
-},
-```
-路由规则下载自： https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest
+## 📥 下载方式
 
+👉 **[点击前往 Releases 页面下载最新版本](../../releases)**  
+（解压即可直接运行，纯绿色免安装，体积轻巧）
 
+---
 
-点击Release 可以下载。
+## 📝 本版本更新内容 (Current Version)
 
-(以下内容是原版WinXray的ReadMe）
+### 1. 默认路由与分流优化
+- **内置大陆直连规则**：默认集成大陆域名 (`geosite:cn`) 以及大陆/局域网 IP (`geoip:cn`, `geoip:private`) 直连规则，避免国内流量绕外网；
+- **API 规则置顶**：内部通信规则置顶优先处理；同时预置了广告拦截 (`geosite:category-ads-all`) 备用规则；
+- **右键快捷插入**：在「配置 -> Core 配置 (JSON)」中新增右键快捷插入常用路由规则功能。
+
+### 2. 内核管理机制彻底重构
+- **原生 Xray 运行**：彻底移除下载后强行将 `xray.exe` 改名为 `v2ray.exe` 及目录重命名的遗留逻辑，直接原生调用 `xray.exe run -c config.json`；
+- **优先加载本地内核**：优先匹配软件同级目录下 `./xray-core/xray.exe` 便携内核，并向下兼容旧版 `v2ray.exe`。
+
+### 3. 节点配置与交互体验改进
+- **所见即所得认证**：SOCKS / HTTP / Naïve 认证在 JSON 配置区支持直观的 `"user"` 与 `"password"` 字段；
+- **默认证书忽略选项**：编辑/新增节点时左侧 JSON 默认赋 `"allowInsecure": true`，方便自签名节点快速调试；
+- **修复保存崩溃**：修复在保存节点时偶发的 `Attempt to get length of number 'port'` 运行时异常；
+- **避免误触发测速重连**：打开节点查看后直接点 ❌ 关闭时，主界面不再误触发重新测速与节点切换；
+- **右键菜单优化**：将高频的「编辑 / 新增代理服务器」提至右键第 2 项；
+- **节点自由排序**：支持右键或快捷键（`Ctrl+Up/Down`, `Alt+Up/Down`）连续上移、下移、置顶、置底。
+
+### 4. 自动连接与界面优化
+- **启动测速策略改进**：新增延迟收集窗口与分档比对机制，延迟极低或相当时优先连接排在靠前的节点；
+- **UI 细节调整**：优化侧边栏退出按钮图标尺寸与粗细，视觉更加均衡精致；规范启动代理提示文案排版。
+
+---
+
+## 📜 历史版本更新记录 (Changelog)
+
+### v3.11
+- **REALITY 协议支持**：完整支持 VLESS + REALITY 协议配置（`publicKey` / `shortId` / `spiderX` / `fingerprint`）；
+- **uTLS 客户端指纹**：支持模拟 Chrome、Firefox、iOS、Safari 等客户端 TLS 指纹；
+- **多协议字段增强**：完善 Trojan-go、NaïveProxy、Shadowsocks-2022 等新特性解析与配置导出；
+- **路由规则在线更新**：支持一键在线下载/更新 Loyalsoldier 的最新 `geoip.dat` 与 `geosite.dat` 规则库。
+
+### v3.10
+- **全面适配 Xray-core**：支持新一代 Xray 内核特性与 VLESS XTLS 传输流控；
+- **订阅管理优化**：支持批量导入 Base64/明文订阅链接，支持节点异常自动刷新订阅源；
+- **多路复用支持**：支持配置 Mux 最大并发连接数与动态流控。
+
+### v3.8 及更早（原版特性）
+- 极速并发 TCPing 测速与秒级故障自愈重连；
+- 内置独立 PAC 代理服务器与全局/PAC 快捷键热键切换；
+- Windows 托盘集成、系统代理自动托管、一键同步系统时间、UWP 应用免代理回环工具。
+
+---
+
+(以下内容为原版 WinXray 介绍文档)
 --------------------------------------------------------------------------------------------------
 
 # WinXray 
