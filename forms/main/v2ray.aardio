@@ -630,7 +630,6 @@ frmXray.listview.onnotify = function(id,code,ptr){
 					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio");
 					frmOutbound.setOutboundConfig(config.proxy.outbounds[currentIdx]);
 					frmOutbound.doModal();
-					publish("uiCommand.restartV2RayCore");
 				});
 
 				popmenu.add();
@@ -655,7 +654,6 @@ frmXray.listview.onnotify = function(id,code,ptr){
 					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio");
 					frmOutbound.setOutboundConfig(config.proxy.outbounds[currentIdx]);
 					frmOutbound.doModal();
-					publish("uiCommand.restartV2RayCore");
 				});
 				popmenu.add();
 			}
