@@ -537,17 +537,17 @@ winform.btnSaveOutbound.oncommand = function(id,event){
 	if(!ok){
 		return winform.editOutbound.showErrorTip("JSON 语法错误", err);
 	}
-	if(!#winform.outboundConfig.address){
+	if(!#tostring(winform.outboundConfig.address : "")){
 		return winform.editAddress.editBox.showErrorTip("配置错误","服务器地址不能为空")
 	}
 	
-	if(!#winform.outboundConfig.port){
+	if(!winform.outboundConfig.port){
 		return winform.editPort.editBox.showErrorTip("配置错误","端口不能为空")
 	}
 	
 	var protocol = winform.outboundConfig.protocol;
 	if((protocol!="socks") && (protocol!="http") && (protocol!="https") && (protocol!="naive")){
-		if( !#winform.outboundConfig.id ){
+		if( !#tostring(winform.outboundConfig.id : "") ){
 			return winform.editId.editBox.showErrorTip("配置错误","当前代理协议密码不能为空")
 		}  
 	}
@@ -568,17 +568,17 @@ winform.btnAddOutbound.oncommand = function(id,event){
 	if(!ok){
 		return winform.editOutbound.showErrorTip("JSON 语法错误", err);
 	}
-	if(!#winform.outboundConfig.address){
+	if(!#tostring(winform.outboundConfig.address : "")){
 		return winform.editAddress.editBox.showErrorTip("配置错误","服务器地址不能为空")
 	}
 	
-	if(!#winform.outboundConfig.port){
+	if(!winform.outboundConfig.port){
 		return winform.editPort.editBox.showErrorTip("配置错误","端口不能为空")
 	}
 	
 	var protocol = winform.outboundConfig.protocol;
 	if( (protocol!="socks") && (protocol!="http") && (protocol!="https") && (protocol!="naive") ){
-		if(!#winform.outboundConfig.id  ){
+		if(!#tostring(winform.outboundConfig.id : "") ){
 			return winform.editId.editBox.showErrorTip("配置错误","当前代理协议密码不能为空")
 		}
 	}
