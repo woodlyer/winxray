@@ -340,10 +340,30 @@ frmXray.btnTcping.oncommand = function(id,event){
 					return;
 				}
 				
-				if(!bestCandidate || (speedVal < bestCandidate.speed) || (math.abs(speedVal - bestCandidate.speed) < 0.005 && outboundIndex < bestCandidate.index)){
+				var isBetter = false;
+				if(!bestCandidate){
+					isBetter = true;
+				}
+				elseif(speedVal < (bestCandidate.speed - 0.03)){
+					isBetter = true;
+				}
+				elseif(math.abs(speedVal - bestCandidate.speed) <= 0.03 && outboundIndex < bestCandidate.index){
+					isBetter = true;
+				}
+				
+				if(isBetter){
 					bestCandidate = { index = outboundIndex; address = address; speed = speedVal };
 				}
 				table.push(frmXray.validOutbounds,{outboundIndex;address});
+				
+				if(bestCandidate.index == 1 && bestCandidate.speed <= 0.05){
+					if(connectTimerId && connectTimerId != -1){
+						frmXray.clearTimeout(connectTimerId);
+					}
+					connectTimerId = -1;
+					activeOutbound(1, address, #items>1);
+					return;
+				}
 				
 				if(!connectTimerId){
 					connectTimerId = frmXray.setTimeout(
@@ -352,7 +372,7 @@ frmXray.btnTcping.oncommand = function(id,event){
 							if(bestCandidate){
 								activeOutbound(bestCandidate.index, bestCandidate.address, #items>1);
 							}
-						}, 80
+						}, 350
 					);
 				}
 			}
