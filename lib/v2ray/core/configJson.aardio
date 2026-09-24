@@ -485,25 +485,20 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			tag="proxy"
 		};
 			
-		if(#outbound.id && outbound.id != "请输入 用户名:密码" && outbound.id != "请输入密码" && outbound.id != "请输入 GUID"){
-			var user,password = ..string.match(outbound.id,"([^\:]+)\:(.+)");
-			if(user && password){
-				ob.settings.servers[1].users = {
-					{
-						user = user;
-						password = password;
-						level = outbound.level : 0;
-					}
+		var user = outbound.user;
+		var password = outbound.password : outbound.passwd;
+		if(!user && !password && #outbound.id && outbound.id != "请输入 用户名:密码" && outbound.id != "请输入密码" && outbound.id != "请输入 GUID"){
+			user,password = ..string.match(outbound.id,"([^\:]+)\:(.+)");
+			if(!user) user = outbound.id;
+		}
+		if(user || password){
+			ob.settings.servers[1].users = {
+				{
+					user = user : "";
+					password = password : "";
+					level = outbound.level : 0;
 				}
-			}
-			else{
-				ob.settings.servers[1].users = {
-					{
-						user = outbound.id; 
-						level = outbound.level : 0;
-					}
-				}
-			}
+			};
 		}
 		
 		..table.assign(proxyOutboundInCore,ob); 
@@ -529,23 +524,19 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			tag="proxy"
 		};
 			
-		if(#outbound.id && outbound.id != "请输入 用户名:密码" && outbound.id != "请输入密码" && outbound.id != "请输入 GUID"){
-			var user,password = ..string.match(outbound.id,"([^\:]+)\:(.+)");
-			if(user && password){
-				ob.settings.servers[1].users = {
-					{
-						user = user;
-						password = password; 
-					}
+		var user = outbound.user;
+		var password = outbound.password : outbound.passwd;
+		if(!user && !password && #outbound.id && outbound.id != "请输入 用户名:密码" && outbound.id != "请输入密码" && outbound.id != "请输入 GUID"){
+			user,password = ..string.match(outbound.id,"([^\:]+)\:(.+)");
+			if(!user) user = outbound.id;
+		}
+		if(user || password){
+			ob.settings.servers[1].users = {
+				{
+					user = user : "";
+					password = password : ""; 
 				}
-			}
-			else{
-				ob.settings.servers[1].users = {
-					{
-						user = outbound.id;  
-					}
-				}
-			}
+			};
 		}
 		
 		..table.assign(proxyOutboundInCore,ob); 

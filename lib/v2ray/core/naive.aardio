@@ -1,4 +1,4 @@
-﻿//naive 内核进程（NaïveProxy）
+//naive 内核进程（NaïveProxy）
 import fsys;
 import wsock.tcp.server;
 import process.popen;
@@ -32,16 +32,20 @@ restart = function(editor,outbound,naiveSocksPort){
 		scheme = outbound.network; 
 	}
 	
-	if(outbound.id){
+	var user = outbound.user;
+	var password = outbound.password : outbound.passwd;
+	if(!user && !password && outbound.id){
 		var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)")
 		if(u && p){
-			urlInfo.user = u;
-			urlInfo.password = p;
+			user = u;
+			password = p;
 		}
 		else {
-			urlInfo.user = outbound.id;
+			user = outbound.id;
 		} 
 	}  
+	if(user) urlInfo.user = user;
+	if(password) urlInfo.password = password;
 	
 	var err;
 	prcsNaive,err = ..process.popen(corePath

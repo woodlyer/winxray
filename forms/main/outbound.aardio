@@ -138,6 +138,9 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "https";
 			winform.outboundConfig.security = null;  
+			winform.outboundConfig.user = "user";
+			winform.outboundConfig.password = "password";
+			winform.outboundConfig.id = null;
 		}
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： NaïveProxy Core';
 		winform.editId.setCueBannerText("请输入 用户名:密码");
@@ -149,6 +152,9 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 			winform.outboundConfig.security = null;
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "tcp";  
+			winform.outboundConfig.user = "user";
+			winform.outboundConfig.password = "password";
+			winform.outboundConfig.id = null;
 		}
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入 用户名:密码");
@@ -160,6 +166,9 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 			winform.outboundConfig.security = null;
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "tcp";  
+			winform.outboundConfig.user = "user";
+			winform.outboundConfig.password = "password";
+			winform.outboundConfig.id = null;
 		}
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入 用户名:密码");
@@ -201,11 +210,33 @@ winform.cmbSecurity.onListChange = function(){
 }
 	
 winform.editId.editBox.onChange = function(){
-    if( winform.outboundConfig.id == winform.editId.text ){
-    	return;
-    }
-      
-	winform.outboundConfig.id = winform.editId.text; 
+	var sel = winform.cmbProtocol.selText;
+	if(sel=="socks" || sel=="http" || sel=="https" || sel=="naive"){
+		var txt = winform.editId.text;
+		if(#txt && txt != "请输入 用户名:密码"){
+			var u,p = string.match(txt,"([^\:]+)\:(.+)");
+			if(u && p){
+				winform.outboundConfig.user = u;
+				winform.outboundConfig.password = p;
+				winform.outboundConfig.id = null;
+			}
+			else {
+				winform.outboundConfig.user = txt;
+				winform.outboundConfig.password = null;
+				winform.outboundConfig.id = null;
+			}
+		}
+		else {
+			winform.outboundConfig.user = null;
+			winform.outboundConfig.password = null;
+			winform.outboundConfig.id = null;
+		}
+	}
+	else {
+		winform.outboundConfig.id = #winform.editId.text ? winform.editId.text : null;
+		winform.outboundConfig.user = null;
+		winform.outboundConfig.password = null;
+	}
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
 	winform.updateSharedLink();
 }
@@ -229,6 +260,9 @@ winform.editPs.editBox.onChange = function(){
 }
 
 var editOutboundTip = {
+	user = {"用户名(user)";"SOCKS/HTTP/NaïveProxy 代理认证用户名"};
+	password = {"密码(password)";"SOCKS/HTTP/NaïveProxy 代理认证密码"};
+	passwd = {"密码(passwd)";"SOCKS/HTTP/NaïveProxy 代理认证密码"};
 	address = {"代理服务器地址";"值可以是域名或者IP地址"};
 	alterId = {"额外ID";"仅用于VMESS协议，新版内核强制为 0"};
 	aid = {"额外ID(alterId)";"数值,仅用于VMESS协议，新版内核强制为 0"};
@@ -285,6 +319,16 @@ winform.editOutbound.wndproc = function(hwnd,message,wParam,lParam){
 	
 import win.ui.menu;
 var insertFieldMenu = { 
+	{ "用户名:user";
+		function(id){
+			winform.addOutboundField("user","user");
+		} 
+	};
+	{ "密码:password";
+		function(id){
+			winform.addOutboundField("password","password");
+		} 
+	};
 	{ "REALITY 服务端公钥:publicKey";
 		function(id){
 			winform.addOutboundField("publicKey","");
@@ -445,7 +489,16 @@ var onEditChange = win.debounce(
 		winform.editPs.editBox.onChange = null;
 		
 		winform.editPort.text = data.port;
-		winform.editId.text = data.id;
+		if(data.user !== null || data.password !== null || data.passwd !== null){
+			var pwd = data.password : data.passwd;
+			if(data.user && pwd) winform.editId.text = data.user + ":" + pwd;
+			elseif(data.user) winform.editId.text = data.user;
+			elseif(pwd) winform.editId.text = ":" + pwd;
+			else winform.editId.text = "";
+		}
+		else {
+			winform.editId.text = data.id : "";
+		}
 		winform.editAddress.text = data.address;
 		winform.editPs.text = data.ps;
 		
@@ -492,9 +545,9 @@ winform.btnSaveOutbound.oncommand = function(id,event){
 		return winform.editPort.editBox.showErrorTip("配置错误","端口不能为空")
 	}
 	
-	if( !#winform.outboundConfig.id ){
-		var protocol = winform.outboundConfig.protocol;
-		if((protocol!="socks") && (protocol!="http") && (protocol!="https")){
+	var protocol = winform.outboundConfig.protocol;
+	if((protocol!="socks") && (protocol!="http") && (protocol!="https") && (protocol!="naive")){
+		if( !#winform.outboundConfig.id ){
 			return winform.editId.editBox.showErrorTip("配置错误","当前代理协议密码不能为空")
 		}  
 	}
@@ -523,9 +576,9 @@ winform.btnAddOutbound.oncommand = function(id,event){
 		return winform.editPort.editBox.showErrorTip("配置错误","端口不能为空")
 	}
 	
-	if(!#winform.outboundConfig.id  ){
-		var protocol = winform.outboundConfig.protocol
-		if( (protocol!="socks") && (protocol!="http") && (protocol!="https") ){
+	var protocol = winform.outboundConfig.protocol;
+	if( (protocol!="socks") && (protocol!="http") && (protocol!="https") && (protocol!="naive") ){
+		if(!#winform.outboundConfig.id  ){
 			return winform.editId.editBox.showErrorTip("配置错误","当前代理协议密码不能为空")
 		}
 	}
@@ -542,7 +595,14 @@ import win.guid;
 winform.btnGenGuid.oncommand = function(id,event){
     var sel = winform.cmbProtocol.selText;
 	if(sel=="socks" || sel=="http" || sel=="https" || sel=="naive"  ){
-		winform.editId.text = "user:" + string.random(16);
+		var u = "user_" + string.random(6);
+		var p = string.random(12);
+		winform.editId.text = u + ":" + p;
+		winform.outboundConfig.user = u;
+		winform.outboundConfig.password = p;
+		winform.outboundConfig.id = null;
+		winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
+		winform.updateSharedLink();
 	}
 	elseif(sel=="shadowsocks" || sel=="ssr"  ){
 		winform.editId.text = string.random(22,"/@0123456abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -614,6 +674,16 @@ winform.btnCopySharedLink.oncommand = function(id,event){
 
 
 winform.setOutboundConfig = function(cfg){
+	if(cfg.protocol=="socks" || cfg.protocol=="http" || cfg.protocol=="https" || cfg.protocol=="naive"){
+		if(cfg.id && (cfg.user === null)){
+			var u,p = string.match(cfg.id,"([^\:]+)\:(.+)");
+			if(u && p){
+				cfg.user = u;
+				cfg.password = p;
+				cfg.id = null;
+			}
+		}
+	}
     winform.cmbProtocol.selText = cfg.protocol;
 	winform.cmbProtocol.onListChange();
 	

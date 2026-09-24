@@ -128,16 +128,20 @@ exportSharedLinks = function(outbounds){
 				}
 			}
 			
-			if(outbound.id){
+			var user = outbound.user;
+			var password = outbound.password : outbound.passwd;
+			if(!user && !password && outbound.id){
 				var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)")
 				if(u && p){
-					urlInfo.user = u;
-					urlInfo.password = p;
+					user = u;
+					password = p;
 				}
 				else {
-					urlInfo.user = outbound.id;
+					user = outbound.id;
 				} 
 			} 
+			if(user) urlInfo.user = user;
+			if(password) urlInfo.password = password;
   
 			..table.push(outString,..inet.url.stringify(urlInfo));
 		} 
@@ -160,16 +164,20 @@ exportSharedLinks = function(outbounds){
 				}
 			}
 			
-			if(outbound.id){
+			var user = outbound.user;
+			var password = outbound.password : outbound.passwd;
+			if(!user && !password && outbound.id){
 				var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)")
 				if(u && p){
-					urlInfo.user = u;
-					urlInfo.password = p;
+					user = u;
+					password = p;
 				}
 				else {
-					urlInfo.user = outbound.id;
+					user = outbound.id;
 				} 
 			} 
+			if(user) urlInfo.user = user;
+			if(password) urlInfo.password = password;
   
 			..table.push(outString,..inet.url.stringify(urlInfo));
 		} 
