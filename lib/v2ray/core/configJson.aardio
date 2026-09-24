@@ -85,7 +85,7 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 		}
 			
 		var ob = {
-			mux = (effectiveSecurity != "xtls" && effectiveSecurity != "reality") ? mux : null;
+			mux = (effectiveSecurity != "xtls" && effectiveSecurity != "reality" && (!#flow)) ? mux : null;
 			protocol="vless";
 			
 			settings={
@@ -543,7 +543,7 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 		..table.assign(proxyOutboundInCore,ob); 
 	} 
 
-	..string.save(jsonPath,..web.json.stringify(currentCore) );
+	..string.save(jsonPath,..web.json.stringify(currentCore,true,false) );
 	return jsonPath;
 }
 

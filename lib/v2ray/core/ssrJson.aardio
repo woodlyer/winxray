@@ -1,4 +1,4 @@
-﻿//ssrJson 内核配置（SSR）
+//ssrJson 内核配置（SSR）
 import web.json;   
 
 namespace v2ray.core.ssrJson;
@@ -33,7 +33,7 @@ write  = function(jsonPath,outbound,ssrSocksPort){
 		udp_timeout=6
 	} 
 
-	..string.save(jsonPath,..web.json.stringify(current) );
+	..string.save(jsonPath,..web.json.stringify(current,true,false) );
 	return jsonPath;
 }
 
