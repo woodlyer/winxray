@@ -1056,6 +1056,16 @@ validOutbound = function(outbound){
 		outbound.tls = "reality";
 		outbound["reality-opts"] = null;
 	}
+
+	if(outbound.publicKey){
+		outbound.publicKey = ..string.trim(outbound.publicKey, '"\'\s\r\n ');
+		outbound.publicKey = ..string.replace(outbound.publicKey, "@+", "-");
+		outbound.publicKey = ..string.replace(outbound.publicKey, "@/", "_");
+		outbound.publicKey = ..string.replace(outbound.publicKey, "@=", "");
+	}
+	if(outbound.shortId){
+		outbound.shortId = ..string.trim(outbound.shortId, '"\'\s\r\n ');
+	}
 	
 	var grpcOpts = outbound["grpc-opts"];
 	if(grpcOpts){

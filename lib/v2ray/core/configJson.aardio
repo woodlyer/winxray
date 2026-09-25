@@ -84,6 +84,19 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			}
 		}
 			
+		var rawPk = outbound.publicKey : outbound.pbk : "";
+		if(#rawPk){
+			rawPk = ..string.trim(rawPk, '"\'\s\r\n ');
+			rawPk = ..string.replace(rawPk, "@+", "-");
+			rawPk = ..string.replace(rawPk, "@/", "_");
+			rawPk = ..string.replace(rawPk, "@=", "");
+		}
+		
+		var rawSid = outbound.shortId : outbound.sid : "";
+		if(#rawSid){
+			rawSid = ..string.trim(rawSid, '"\'\s\r\n ');
+		}
+
 		var ob = {
 			mux = (effectiveSecurity != "xtls" && effectiveSecurity != "reality" && (!#flow)) ? mux : null;
 			protocol="vless";
@@ -111,8 +124,8 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 					show = false;
 					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
 					serverName = outbound.sni : outbound.address;
-					publicKey = outbound.publicKey : outbound.pbk : "";
-					shortId = outbound.shortId : outbound.sid : "";
+					publicKey = rawPk;
+					shortId = rawSid;
 					spiderX = outbound.spiderX : outbound.spx : "/";
 				} : null;
 				tlsSettings = (effectiveSecurity == "tls") ? {
