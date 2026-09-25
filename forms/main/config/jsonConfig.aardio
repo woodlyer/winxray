@@ -479,14 +479,39 @@ winform.editOutbounds.enablePopMenu(function(){
 						winform.editOutbounds.selText = '"sni":"",'
 					} 
 				};
-				{ "启用TLS:tls";
+				{ "启用TLS/REALITY:tls";
 					function(id){
-						winform.editOutbounds.selText = '"tls":"tls",'
+						winform.editOutbounds.selText = '"tls":"reality",'
+					} 
+				};
+				{ "REALITY 服务端公钥:publicKey";
+					function(id){
+						winform.editOutbounds.selText = '"publicKey":"",'
+					} 
+				};
+				{ "REALITY 简短ID:shortId";
+					function(id){
+						winform.editOutbounds.selText = '"shortId":"",'
+					} 
+				};
+				{ "REALITY 爬虫路径:spiderX";
+					function(id){
+						winform.editOutbounds.selText = '"spiderX":"/",'
+					} 
+				};
+				{ "uTLS 模拟指纹:fingerprint";
+					function(id){
+						winform.editOutbounds.selText = '"fingerprint":"chrome",'
+					} 
+				};
+				{ "gRPC 业务名称:serviceName";
+					function(id){
+						winform.editOutbounds.selText = '"serviceName":"",'
 					} 
 				};
 				{ "流控:flow";
 					function(id){
-						winform.editOutbounds.selText = '"flow":"xtls-rprx-direct",'
+						winform.editOutbounds.selText = '"flow":"xtls-rprx-vision",'
 					} 
 				};
 				{ "多路复用最大连接:concurrency";
@@ -646,7 +671,13 @@ var editOutboundsTip = {
 	port = {"端口";"服务器端口,数值"}; 
 	security = {"加密方式";"可省略,vmess协议默认为auto,vless协议默认为none"};
 	sni = {"TLS服务器名";"TLS客户端请求中的服务器名字段,如果不指定则默认取host或address字段值。"}; 
-	flow = {"流控";"目前仅用于选择 XTLS 的算法,省略时默认值为xtls-rprx-direct"}; 
+	flow = {"流控";"目前用于选择 XTLS 的算法,如 xtls-rprx-vision"}; 
+	publicKey = {"REALITY 服务端公钥";"服务端的 X25519 公钥 (publicKey / pbk)"};
+	shortId = {"REALITY 简短ID";"服务端的 shortId (sid)，十六进制字符串"};
+	spiderX = {"REALITY 爬虫路径";"服务端的 spiderX (spx)，默认为 /"};
+	fingerprint = {"uTLS 客户端指纹";"模拟的浏览器指纹，如 chrome, firefox, safari, edge, random, randomized 等"};
+	serviceName = {"gRPC 业务名称";"gRPC 传输协议的 serviceName"};
+	allowInsecure = {"允许忽略证书";"布尔值 true/false。仅用于自签名证书的传统 TLS 节点"};
 	obfs = {"混淆插件";"可选值：plain,http_simple,http_post,tls1.2_ticket_auth ..."}; 
 	obfsParam = {"混淆参数";"SSR 里的 obfs_param"}; 
 	networkParam = {"SSR网络协议参数";"SSR 里的 protocol_param"}; 
