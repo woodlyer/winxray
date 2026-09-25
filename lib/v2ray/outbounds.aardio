@@ -403,8 +403,9 @@ importFromString = function(str,subscribeUrl){
 					
 					if(info.security) outbound.tls = info.security;
 					if(info.flow) outbound.flow = info.flow;
-					if(info.allowInsecure!==null) {
-						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
+					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+					if(allowInsecure!==null) {
+						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
 					}
 					if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
 					if(info.alpn) outbound.alpn = info.alpn;	 
@@ -482,8 +483,9 @@ importFromString = function(str,subscribeUrl){
 					
 					if(info.security) outbound.tls = info.security;
 					if(info.flow) outbound.flow = info.flow;
-					if(info.allowInsecure!==null) {
-						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
+					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+					if(allowInsecure!==null) {
+						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
 					}
 					if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
 					if(info.alpn) outbound.alpn = info.alpn;	 
@@ -613,8 +615,9 @@ importFromString = function(str,subscribeUrl){
 					outbound.sni = info.sni || info.peer;
 					outbound.host = info.host;
 					outbound.path = info.path; 
-					if(info.allowInsecure!==null) {
-						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false") 
+					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+					if(allowInsecure!==null) {
+						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
 					}
 					
 					if(info.type && info.type!=="original"){
@@ -930,9 +933,13 @@ validOutbound = function(outbound){
 		} 
 	}  
 	
-	if(outbound["skip-cert-verify"]){
-		outbound.allowInsecure = outbound["skip-cert-verify"];
+	var allowInsecure = outbound.allowInsecure : outbound["skip-cert-verify"] : outbound["insecure"] : outbound["allow_insecure"] : outbound["tls-insecure"];
+	if(allowInsecure!==null){
+		outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false);
 		outbound["skip-cert-verify"] = null;
+		outbound["insecure"] = null;
+		outbound["allow_insecure"] = null;
+		outbound["tls-insecure"] = null;
 	}
 	
 	if(outbound["ws-path"]){
