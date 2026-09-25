@@ -390,8 +390,9 @@ importFromString = function(str,subscribeUrl){
 					allowInsecure = true;
 				};
 				
-				if(vmessUrl.extraInfo){
-					var info = ..inet.url.splitParameters(vmessUrl.extraInfo);
+				var extraInfo = (#vmessUrl.extraInfo) ? vmessUrl.extraInfo : ..string.match(vmess2,`\?([^\#]+)`);
+				if(extraInfo){
+					var info = ..inet.url.splitParameters(extraInfo);
 					outbound.sni = info.sni;
 					outbound.host = info.host;
 					outbound.path = info.path;
@@ -412,8 +413,9 @@ importFromString = function(str,subscribeUrl){
 					if(info.alpn) outbound.alpn = info.alpn;	 
 				}
 				
-				if(vmessUrl.location){
-					outbound.ps = ..inet.url.decode(vmessUrl.location);
+				var location = (#vmessUrl.location) ? vmessUrl.location : ..string.match(vmess2,`\#(\S+)`);
+				if(location){
+					outbound.ps = ..inet.url.decode(location);
 				}
 	
 				outbound.subscribeUrl = subscribeUrl;
@@ -471,8 +473,9 @@ importFromString = function(str,subscribeUrl){
 					allowInsecure = true;
 				};
 				
-				if(vlessUrl.extraInfo){
-					var info = ..inet.url.splitParameters(vlessUrl.extraInfo);
+				var extraInfo = (#vlessUrl.extraInfo) ? vlessUrl.extraInfo : ..string.match(vless,`\?([^\#]+)`);
+				if(extraInfo){
+					var info = ..inet.url.splitParameters(extraInfo);
 					outbound.sni = info.sni;
 					outbound.host = info.host;
 					outbound.path = info.path;
@@ -499,8 +502,9 @@ importFromString = function(str,subscribeUrl){
 					if(info.mode) outbound.mode = info.mode;
 				}
 				
-				if(vlessUrl.location){
-					outbound.ps = ..inet.url.decode(vlessUrl.location);
+				var location = (#vlessUrl.location) ? vlessUrl.location : ..string.match(vless,`\#(\S+)`);
+				if(location){
+					outbound.ps = ..inet.url.decode(location);
 				}
 	
 				outbound.subscribeUrl = subscribeUrl;
@@ -613,8 +617,9 @@ importFromString = function(str,subscribeUrl){
 					allowInsecure = true;
 				};
 				
-				if(trojanUrl.extraInfo){
-					var info = ..inet.url.splitParameters(trojanUrl.extraInfo);
+				var extraInfo = (#trojanUrl.extraInfo) ? trojanUrl.extraInfo : ..string.match(trojan,`\?([^\#]+)`);
+				if(extraInfo){
+					var info = ..inet.url.splitParameters(extraInfo);
 					outbound.sni = info.sni || info.peer;
 					outbound.host = info.host;
 					outbound.path = info.path; 
@@ -633,8 +638,9 @@ importFromString = function(str,subscribeUrl){
 					outbound.security = info.encryption; 
 				}
 				
-				if(trojanUrl.location){
-					outbound.ps = ..inet.url.decode(trojanUrl.location);
+				var location = (#trojanUrl.location) ? trojanUrl.location : ..string.match(trojan,`\#(\S+)`);
+				if(location){
+					outbound.ps = ..inet.url.decode(location);
 				}
 	
 				outbound.subscribeUrl = subscribeUrl;
