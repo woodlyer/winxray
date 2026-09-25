@@ -600,6 +600,9 @@ subscribe("outbounds.updateConfigJson",function(){
 		return;
 	}
 	
+	if(config.proxy.outbounds){
+		config.proxy.outbounds = v2ray.outbounds.validAll(config.proxy.outbounds);
+	}
 	winform.editOutbounds.text = web.json.stringifyArray( 
 		config.proxy.outbounds,true,false,true
 	)
@@ -607,6 +610,9 @@ subscribe("outbounds.updateConfigJson",function(){
 	winform.editOutbounds.modified = false;
 } )
 
+if(config.proxy.outbounds){
+	config.proxy.outbounds = v2ray.outbounds.validAll(config.proxy.outbounds);
+}
 winform.editOutbounds.text = web.json.stringifyArray( 
 		config.proxy.outbounds,true,false,true
 ) : "[]"

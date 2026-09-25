@@ -387,6 +387,7 @@ importFromString = function(str,subscribeUrl){
 					network = "tcp";
 					protocol = "vmess";
 					tls = "tls";
+					allowInsecure = true;
 				};
 				
 				if(vmessUrl.extraInfo){
@@ -467,6 +468,7 @@ importFromString = function(str,subscribeUrl){
 					network = "tcp";
 					protocol = "vless";
 					tls = "tls";
+					allowInsecure = true;
 				};
 				
 				if(vlessUrl.extraInfo){
@@ -607,7 +609,8 @@ importFromString = function(str,subscribeUrl){
 					port = tonumber(trojanUrl.port) : 443; 
 					id = trojanUrl.user;
 					network = "tcp";
-					protocol = "trojan-go"
+					protocol = "trojan-go";
+					allowInsecure = true;
 				};
 				
 				if(trojanUrl.extraInfo){
