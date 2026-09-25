@@ -941,6 +941,9 @@ validOutbound = function(outbound){
 		outbound["allow_insecure"] = null;
 		outbound["tls-insecure"] = null;
 	}
+	elseif(outbound.tls=="tls" || outbound.tls=="xtls" || outbound.protocol=="trojan" || outbound.protocol=="trojan-go" || outbound.protocol=="https"){
+		outbound.allowInsecure = true;
+	}
 	
 	if(outbound["ws-path"]){
 		outbound.path = outbound["ws-path"];

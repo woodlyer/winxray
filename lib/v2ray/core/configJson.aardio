@@ -116,14 +116,14 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 					spiderX = outbound.spiderX : outbound.spx : "/";
 				} : null;
 				tlsSettings = (effectiveSecurity == "tls") ? {
-					allowInsecure = !!outbound.allowInsecure;
+					allowInsecure = (outbound.allowInsecure !== false);
 					serverName = outbound.sni : outbound.address;
 					alpn = outbound.alpn;
 					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
 					disableSessionResumption = outbound.disableSessionResumption;
 				} : null;
 				xtlsSettings = (effectiveSecurity == "xtls") ? {
-					allowInsecure = !!outbound.allowInsecure;
+					allowInsecure = (outbound.allowInsecure !== false);
 					serverName = outbound.sni : outbound.address;
 					alpn = outbound.alpn;
 					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
@@ -262,7 +262,7 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 				network=outbound.network : "tcp";
 				security=#outbound.tls ? outbound.tls : null;
 				tlsSettings = #outbound.tls ? {
-					allowInsecure = !!outbound.allowInsecure;
+					allowInsecure = (outbound.allowInsecure !== false);
 					serverName = outbound.sni : outbound.address;
 					alpn = outbound.alpn;
 					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
@@ -400,7 +400,7 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 				security = #outbound.tls ? outbound.tls : "tls";  
 				
 				tlsSettings =  (outbound.tls === "tls") ? {
-					allowInsecure = !!outbound.allowInsecure;
+					allowInsecure = (outbound.allowInsecure !== false);
 					serverName = outbound.sni : outbound.address;
 					alpn = outbound.alpn;
 					fingerprint = outbound.fingerprint : outbound.fp : "chrome";
@@ -518,7 +518,7 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			streamSettings={
 				security = outbound.protocol=="https"  ? "tls" : "none";  
 				tlsSettings = (outbound.protocol=="https") ? {
-					allowInsecure = !!outbound.allowInsecure;
+					allowInsecure = (outbound.allowInsecure !== false);
 				} : null;
 			};
 			tag="proxy"
