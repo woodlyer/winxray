@@ -357,9 +357,14 @@ importFromString = function(str,subscribeUrl){
 		_subscriptionResponseCache[subscribeUrl] = crc32;
 	}
 
-	if(..string.match(str,"^\s*[\w=+/-_]+\s*$")){
-		str = ..crypt.decodeBin(str);
-		if(!str) return;
+	if(!..string.find(str,"<vmess>|<vless>|<trojan>|<trojan-go>|<ss>|<ssr>|<http>|<https>|%\{\}|%\[\]")){
+		var cleanStr = ..string.replace(str,"\s+","");
+		if(..string.match(cleanStr,"^[\w=+/-_]+$")){
+			var decoded = ..crypt.decodeBin(cleanStr);
+			if(decoded && #decoded){
+				str = decoded;
+			}
+		}
 	}
 	
 	var outbounds = ..table.array();
@@ -462,7 +467,7 @@ importFromString = function(str,subscribeUrl){
 		var vless = ..string.match(line,`vless\:\/\/\S+`);
 		if( vless ) {
 			var vlessUrl = ..inet.url.split(vless) 
-			if(vlessUrl.user && vlessUrl.host && vlessUrl.port){
+			if(vlessUrl.user && vlessUrl.host){
 				var outbound = {
 					address = vlessUrl.host;
 					port = tonumber(vlessUrl.port) : 443; 
@@ -573,15 +578,20 @@ importFromString = function(str,subscribeUrl){
 					port = tonumber(trojanUrl.port) : 443; 
 					id = trojanUrl.user;
 					network = "tcp";
-					protocol = "trojan"
+					protocol = "trojan";
+					allowInsecure = true;
 				};
 				
-				if(trojanUrl.extraInfo){
-					var info = ..inet.url.splitParameters(trojanUrl.extraInfo);
+				var extraInfo = (#trojanUrl.extraInfo) ? trojanUrl.extraInfo : ..string.match(trojan,`\?([^\#]+)`);
+				if(extraInfo){
+					var info = ..inet.url.splitParameters(extraInfo);
 					outbound.sni = info.sni || info.peer;
-					
 					outbound.host = info.host;
-					outbound.path = info.path;
+					outbound.path = info.path; 
+					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+					if(allowInsecure!==null) {
+						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+					}
 					
 					if(info.type && info.type!=="original"){
 						outbound.network = info.type;
@@ -590,11 +600,12 @@ importFromString = function(str,subscribeUrl){
 						}
 					}
 					
-					outbound.security = info.encryption;
+					outbound.security = info.encryption; 
 				}
 				
-				if(trojanUrl.location){
-					outbound.ps = ..inet.url.decode(trojanUrl.location);
+				var location = (#trojanUrl.location) ? trojanUrl.location : ..string.match(trojan,`\#(\S+)`);
+				if(location){
+					outbound.ps = ..inet.url.decode(location);
 				}
 	
 				outbound.subscribeUrl = subscribeUrl;
@@ -1115,6 +1126,7 @@ updateSubscription = function(outbondSubscribeUrlMap){
 		}
 	}
 	
+	..config.proxy.outbounds = cfgOutbounds;
 	..config.proxy.save();
 	..publish("outbounds.updateConfigJson");
 	..publish("uiCommand.restartV2RayCore",cfgOutbounds) 

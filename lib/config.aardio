@@ -16,10 +16,6 @@ namespace config {
 	if(!proxy.outbounds){
 		__loadDefaultOutbounds();
 	}
-	else {
-		import v2ray.outbounds;
-		proxy.outbounds = ..v2ray.outbounds.validAll(proxy.outbounds);
-	}
 }
 
 if(!config.proxy.mode) config.proxy.mode = "pac";

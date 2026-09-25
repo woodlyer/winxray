@@ -57,7 +57,7 @@ var reloadSubscriptions = function(){
 	
 	var count = 0;
 	for(url,v in outbondSubscribeUrlMap){ 
-		var tUrl = ..inet.url.split(subscribeUrl); 
+		var tUrl = ..inet.url.split(url); 
 		..table.push(cfgSubscribeUrls,{url=url;ps=tUrl ? tUrl.host : "";checked="启用"})
 	} 
 	
