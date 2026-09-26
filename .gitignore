@@ -1,0 +1,45 @@
+# aardio build and publish outputs
+/.build/
+/build/
+/publish/
+/dist/
+*.obj
+*.pdb
+
+# Binaries and archives
+*.exe
+*.dll
+*.so
+*.dylib
+*.zip
+*.7z
+*.tar.gz
+*.rar
+
+# Downloaded cores and runtime directories
+/xray-core/
+/v2ray-core/
+/tuic-core/
+/naive-core/
+/ssr-core/
+/download/
+/temp/
+
+# Logs and local configurations
+*.log
+/config.json
+
+# Editor and temporary files
+*.tmp
+*.bak
+*.~*
+*.swp
+*.swo
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
