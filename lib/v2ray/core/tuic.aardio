@@ -129,6 +129,11 @@ getPath = function(hwnd){
 		return path;
 	}
 
+	var path = ..io.fullpath("/tuic-client.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
 	var path = ..io.fullpath("/xray-core/tuic-core/tuic-client.exe");
 	if(..io.exist(path)){
 		return path;
@@ -155,6 +160,11 @@ getCoreDir = function(hwnd){
 	var path = ..io.fullpath("/tuic-core/tuic-client.exe");
 	if(..io.exist(path)){
 		return ..io.fullpath("/tuic-core/");
+	}
+
+	var path = ..io.fullpath("/tuic-client.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/");
 	}
 
 	var path = ..io.fullpath("/xray-core/tuic-core/tuic-client.exe");
