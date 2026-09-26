@@ -244,10 +244,35 @@ winform.editId.editBox.onChange = function(){
 			winform.outboundConfig.id = null;
 		}
 	}
+	elseif(sel=="tuic"){
+		var txt = winform.editId.text;
+		if(#txt && txt != "请输入 UUID:密码 或 UUID"){
+			var u,p = string.match(txt,"([^\:]+)\:(.+)");
+			if(u && p){
+				winform.outboundConfig.uuid = u;
+				winform.outboundConfig.password = p;
+				winform.outboundConfig.id = txt;
+				winform.outboundConfig.user = null;
+			}
+			else {
+				winform.outboundConfig.uuid = txt;
+				winform.outboundConfig.password = null;
+				winform.outboundConfig.id = txt;
+				winform.outboundConfig.user = null;
+			}
+		}
+		else {
+			winform.outboundConfig.uuid = null;
+			winform.outboundConfig.password = null;
+			winform.outboundConfig.id = null;
+			winform.outboundConfig.user = null;
+		}
+	}
 	else {
 		winform.outboundConfig.id = #winform.editId.text ? winform.editId.text : null;
 		winform.outboundConfig.user = null;
 		winform.outboundConfig.password = null;
+		winform.outboundConfig.uuid = null;
 	}
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
 	winform.updateSharedLink();
@@ -498,10 +523,28 @@ var onEditChange = win.debounce(
 		winform.editPs.editBox.onChange = null;
 		
 		winform.editPort.text = data.port;
-		if(data.user !== null || data.password !== null || data.passwd !== null){
-			var pwd = data.password : data.passwd;
-			if(data.user && pwd) winform.editId.text = data.user + ":" + pwd;
-			elseif(data.user) winform.editId.text = data.user;
+		var u = data.uuid : data.user;
+		var pwd = data.password : data.passwd;
+		if(!u && data.id){
+			var idUser,idPwd = string.match(data.id,"([^\:]+)\:(.+)");
+			if(idUser){
+				u = idUser;
+				if(!pwd) pwd = idPwd;
+			}
+			else {
+				u = data.id;
+			}
+		}
+		elseif(u && !pwd && data.id){
+			var idUser,idPwd = string.match(data.id,"([^\:]+)\:(.+)");
+			if(idUser && idPwd){
+				pwd = idPwd;
+			}
+		}
+		
+		if(u !== null || pwd !== null){
+			if(u && pwd) winform.editId.text = u + ":" + pwd;
+			elseif(u) winform.editId.text = u;
 			elseif(pwd) winform.editId.text = ":" + pwd;
 			else winform.editId.text = "";
 		}

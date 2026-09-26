@@ -21,6 +21,12 @@ write = function(jsonPath,outbound,tuicSocksPort){
 			user = outbound.id;
 		} 
 	}
+	elseif(user && !password && outbound.id){
+		var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)");
+		if(u && p){
+			password = p;
+		}
+	}
 
 	var alpnList = {"h3"};
 	if(outbound.alpn){
