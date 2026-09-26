@@ -40,7 +40,22 @@ write = function(jsonPath,outbound,tuicSocksPort){
 
 	var congestion = outbound.congestion_control : outbound.congestionController : outbound.congestion : "bbr";
 	var udpMode = outbound.udp_relay_mode : outbound.udpRelayMode : "native";
-	var skipCert = (outbound.allowInsecure || outbound.skip_cert_verify || outbound.skipCertVerify) ? true : false;
+	var skipCert = false;
+	if(outbound.skip_cert_verify !== null){
+		skipCert = (outbound.skip_cert_verify == true || outbound.skip_cert_verify == "1" || outbound.skip_cert_verify == "true");
+	}
+	elseif(outbound.skipCertVerify !== null){
+		skipCert = (outbound.skipCertVerify == true || outbound.skipCertVerify == "1" || outbound.skipCertVerify == "true");
+	}
+	elseif(outbound.allow_insecure !== null){
+		skipCert = (outbound.allow_insecure == true || outbound.allow_insecure == "1" || outbound.allow_insecure == "true");
+	}
+	elseif(outbound.allowInsecure !== null){
+		skipCert = (outbound.allowInsecure == true || outbound.allowInsecure == "1" || outbound.allowInsecure == "true");
+	}
+	elseif(outbound.insecure !== null){
+		skipCert = (outbound.insecure == true || outbound.insecure == "1" || outbound.insecure == "true");
+	}
 	var zeroRtt = (outbound.zero_rtt_handshake || outbound.zeroRtt) ? true : false;
 	var disableSni = (outbound.disable_sni || outbound.disableSni) ? true : false;
 	var sniHost = outbound.sni;

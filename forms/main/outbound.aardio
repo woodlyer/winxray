@@ -746,7 +746,7 @@ winform.setOutboundConfig = function(cfg){
 			}
 		}
 	}
-	if(cfg.allowInsecure === null){
+	if(cfg.allowInsecure === null && cfg.protocol != "tuic"){
 		cfg.allowInsecure = true;
 	}
     winform.cmbProtocol.selText = cfg.protocol;
