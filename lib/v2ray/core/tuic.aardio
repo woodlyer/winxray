@@ -29,6 +29,9 @@ restart = function(editor,outbound,tuicSocksPort){
 		return false,err:"启动失败,写入 TUIC 配置文件遇到错误！"; 
 	}
 	 
+	..string.setenv("NO_COLOR","1");
+	..string.setenv("CLICOLOR","0");
+
 	var err;
 	prcsTuic,err = ..process.popen(corePath, "-c", configPath);
 	if(!prcsTuic){

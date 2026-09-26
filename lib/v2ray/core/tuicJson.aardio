@@ -99,7 +99,7 @@ write = function(jsonPath,outbound,tuicSocksPort){
 			heartbeat = "3s";
 			timeout = "8s";
 		};
-		log_level = "warn";
+		log_level = outbound.log_level : outbound.logLevel : "error";
 	};
 
 	if(outbound.ip){
