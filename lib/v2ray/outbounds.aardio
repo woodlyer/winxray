@@ -114,6 +114,48 @@ exportSharedLinks = function(outbounds){
 			} 
 			..table.push(outString,vless);
 		} 
+		elseif(outbound.protocol == "tuic"){
+			var tuic;
+			var user = outbound.user : outbound.uuid;
+			var password = outbound.password : outbound.passwd;
+			if(!user && !password && outbound.id){
+				var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)");
+				if(u && p){
+					user = u;
+					password = p;
+				}
+				else {
+					user = outbound.id;
+				} 
+			} 
+			
+			if(user && password){
+				tuic = "tuic://" + ..inet.url.encode(user) + ":" + ..inet.url.encode(password) + "@" + outbound.address + ":" + outbound.port;
+			}
+			elseif(user){
+				tuic = "tuic://" + ..inet.url.encode(user) + "@" + outbound.address + ":" + outbound.port;
+			}
+			else {
+				tuic = "tuic://" + outbound.address + ":" + outbound.port;
+			}
+			
+			var info = {};
+			if(outbound.sni && outbound.sni != outbound.address) info.sni = outbound.sni;
+			if(outbound.alpn) info.alpn = (type(outbound.alpn)==type.table) ? ..string.join(outbound.alpn,",") : outbound.alpn;
+			if(outbound.congestion_control : outbound.congestionController) info.congestion_control = outbound.congestion_control : outbound.congestionController;
+			if(outbound.udp_relay_mode : outbound.udpRelayMode) info.udp_relay_mode = outbound.udp_relay_mode : outbound.udpRelayMode;
+			if(outbound.allowInsecure || outbound.skip_cert_verify || outbound.skipCertVerify) info.allow_insecure = "1";
+			if(outbound.disable_sni || outbound.disableSni) info.disable_sni = "1";
+			if(outbound.zero_rtt_handshake || outbound.zeroRtt) info.zero_rtt_handshake = "1";
+			
+			if(..table.count(info)){
+				tuic = ..inet.url.appendExtraInfo(tuic,info);
+			}
+			if(outbound.ps){
+				tuic = tuic + "#" + ..inet.url.encode(outbound.ps);
+			} 
+			..table.push(outString,tuic);
+		} 
 		elseif(outbound.protocol == "naive"){
 			var urlInfo = {
 				host = outbound.address;
@@ -357,7 +399,7 @@ importFromString = function(str,subscribeUrl){
 		_subscriptionResponseCache[subscribeUrl] = crc32;
 	}
 
-	if(!..string.find(str,"<vmess>|<vless>|<trojan>|<trojan-go>|<ss>|<ssr>|<http>|<https>|%\{\}|%\[\]")){
+	if(!..string.find(str,"<vmess>|<vless>|<trojan>|<trojan-go>|<tuic>|<naive>|<ss>|<ssr>|<http>|<https>|%\{\}|%\[\]")){
 		var cleanStr = ..string.replace(str,"\s+","");
 		if(..string.match(cleanStr,"^[\w=+/-_]+$")){
 			var decoded = ..crypt.decodeBin(cleanStr);
@@ -798,6 +840,78 @@ importFromString = function(str,subscribeUrl){
 			
 			continue;
 		}
+
+		var tuic = ..string.match(line,`(tuic\:\/\/\S+)`);
+		if( tuic ) {
+			var tuicUrl = ..inet.url.split(tuic);
+			if( tuicUrl.host ){
+				var outbound = {
+					address = tuicUrl.host;
+					port = tonumber(tuicUrl.port) : 8443; 
+					protocol = "tuic";
+					network = "quic";
+				};
+				
+				if(tuicUrl.user && tuicUrl.password){
+					outbound.id = tuicUrl.user + ":" + tuicUrl.password;
+					outbound.uuid = tuicUrl.user;
+					outbound.password = tuicUrl.password;
+				}
+				elseif(tuicUrl.user){
+					var u,p = ..string.match(tuicUrl.user,"([^\:]+)\:([^\:]+)");
+					if(u && p){
+						outbound.id = u + ":" + p;
+						outbound.uuid = u;
+						outbound.password = p;
+					}
+					else {
+						outbound.id = tuicUrl.user;
+						outbound.uuid = tuicUrl.user;
+					}
+				}
+				
+				if(tuicUrl.extraInfo){
+					var info = ..inet.url.splitParameters(tuicUrl.extraInfo);
+					if(info.sni) outbound.sni = info.sni;
+					if(info.alpn) outbound.alpn = info.alpn;
+					if(info.congestion_control) outbound.congestion_control = info.congestion_control;
+					elseif(info.congestion_controller) outbound.congestion_control = info.congestion_controller;
+					elseif(info.congestion) outbound.congestion_control = info.congestion;
+					
+					if(info.udp_relay_mode) outbound.udp_relay_mode = info.udp_relay_mode;
+					elseif(info.udp_mode) outbound.udp_relay_mode = info.udp_mode;
+					
+					if(info.password && !outbound.password) {
+						outbound.password = info.password;
+						if(outbound.uuid) outbound.id = outbound.uuid + ":" + info.password;
+					}
+					if(info.token && !outbound.id) outbound.id = info.token;
+					if(info.allow_insecure!==null){
+						outbound.allowInsecure = (info.allow_insecure!=="0" && info.allow_insecure!=="false");
+					}
+					elseif(info.allowInsecure!==null){
+						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false");
+					}
+					elseif(info.skip_cert_verify!==null){
+						outbound.allowInsecure = (info.skip_cert_verify!=="0" && info.skip_cert_verify!=="false");
+					}
+					if(info.disable_sni!==null){
+						outbound.disable_sni = (info.disable_sni!=="0" && info.disable_sni!=="false");
+					}
+					if(info.zero_rtt_handshake!==null){
+						outbound.zero_rtt_handshake = (info.zero_rtt_handshake!=="0" && info.zero_rtt_handshake!=="false");
+					}
+				} 
+				if(tuicUrl.location){
+					outbound.ps = ..inet.url.decode(tuicUrl.location);
+				}
+	
+				outbound.subscribeUrl = subscribeUrl;
+				..table.push(outbounds,outbound);
+			} 
+			
+			continue;
+		}
 		
 		var clashJson = ..string.match(line,`^\s*-\s*(%\{\})\s*$`);
 		if( clashJson ) {
@@ -819,6 +933,10 @@ importFromString = function(str,subscribeUrl){
 					if(outbound.type=="ss"){
 						outbound.type =	"shadowsocks";
 						outbound.network = "tcp";			
+					}
+					if(outbound.type=="tuic"){
+						outbound.type = "tuic";
+						outbound.network = "quic";
 					}
 					outbound.protocol = outbound.type;
 					outbound.type = null;
@@ -1076,6 +1194,29 @@ validOutbound = function(outbound){
 	
 	if(outbound.flow == "xtls-rprx-direct" || outbound.flow == "xtls-rprx-origin"){
 		outbound.flow = "xtls-rprx-vision";
+	}
+	
+	if(outbound.protocol == "tuic"){
+		outbound.network = "quic";
+		if(outbound["congestion-controller"] && !outbound.congestion_control){
+			outbound.congestion_control = outbound["congestion-controller"];
+			outbound["congestion-controller"] = null;
+		}
+		if(outbound["udp-relay-mode"] && !outbound.udp_relay_mode){
+			outbound.udp_relay_mode = outbound["udp-relay-mode"];
+			outbound["udp-relay-mode"] = null;
+		}
+		if(outbound["zero-rtt-handshake"] !== null && outbound.zero_rtt_handshake === null){
+			outbound.zero_rtt_handshake = (outbound["zero-rtt-handshake"]!=="0" && outbound["zero-rtt-handshake"]!=="false" && outbound["zero-rtt-handshake"]!==false);
+			outbound["zero-rtt-handshake"] = null;
+		}
+		if(outbound["disable-sni"] !== null && outbound.disable_sni === null){
+			outbound.disable_sni = (outbound["disable-sni"]!=="0" && outbound["disable-sni"]!=="false" && outbound["disable-sni"]!==false);
+			outbound["disable-sni"] = null;
+		}
+		if(outbound.uuid && outbound.password && !outbound.id){
+			outbound.id = outbound.uuid + ":" + outbound.password;
+		}
 	}
 	
 	outbound["http-opts"] = null;

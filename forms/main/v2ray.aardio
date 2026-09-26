@@ -1216,7 +1216,7 @@ frmXray.importServerFromClipBd = function(){
 		}
 	}
 
-	frmXray.msgFrown('未导入服务器！\r\n请先复制以下格式文本（自动清除其中的无效内容）：\r\n\r\n1、一行或多行（忽略无效行）分享链接或服务器JSON配置。\r\n支持 vmess://，vless://，ss://，ssr://，trojan://， trojan-go:// 等通用分享链接。\r\n\r\n2、包含多个服务器配置的JSON数组,支持winXray格式以及通用格式JSON。\r\n\r\n3、单个 http:// 或 https:// 开头的通用订阅源地址。\r\n可直接使用浏览器地址栏的github文件地址（含blob或raw目录名）。\r\n也可以仅复制单斜杆开始的github文件路径。\r\n\r\n订阅源可用BASE64编码或明文返回以上1、2条规定的配置或分享链接。')
+	frmXray.msgFrown('未导入服务器！\r\n请先复制以下格式文本（自动清除其中的无效内容）：\r\n\r\n1、一行或多行（忽略无效行）分享链接或服务器JSON配置。\r\n支持 vmess://，vless://，tuic://，ss://，ssr://，trojan://， trojan-go:// 等通用分享链接。\r\n\r\n2、包含多个服务器配置的JSON数组,支持winXray格式以及通用格式JSON。\r\n\r\n3、单个 http:// 或 https:// 开头的通用订阅源地址。\r\n可直接使用浏览器地址栏的github文件地址（含blob或raw目录名）。\r\n也可以仅复制单斜杆开始的github文件路径。\r\n\r\n订阅源可用BASE64编码或明文返回以上1、2条规定的配置或分享链接。')
 }
 
 var testTimerId;

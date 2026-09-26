@@ -13,7 +13,7 @@ btnInsertField={cls="plus";text="插入更多配置字段";left=10;top=0;right=1
 btnSaveOutbound={cls="plus";text="保 存";left=826;top=410;right=929;bottom=446;align="left";bgcolor=11580047;db=1;disabled=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=22}};iconText='\uF0C7';notify=1;textPadding={left=40};z=16};
 btnUpdateCore={cls="plus";text="下载 / 更新 NaÏveProxy Core";left=637;top=61;right=979;bottom=89;align="left";color=3947580;dr=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-17;name='FontAwesome');padding={left=18}};iconText='\uF0AB';notify=1;textPadding={left=50};z=23};
 cmbNetwork={cls="combobox";left=656;top=97;right=814;bottom=123;dr=1;dt=1;edge=1;items={"tcp";"grpc";"ws";"httpupgrade";"splithttp";"h2";"kcp";"quic"};mode="dropdown";z=13};
-cmbProtocol={cls="combobox";left=656;top=28;right=814;bottom=54;dr=1;dt=1;edge=1;items={"vmess";"vless";"trojan";"trojan-go";"ssr";"shadowsocks";"naive";"socks";"https";"http"};mode="dropdown";z=12};
+cmbProtocol={cls="combobox";left=656;top=28;right=814;bottom=54;dr=1;dt=1;edge=1;items={"vmess";"vless";"trojan";"trojan-go";"tuic";"ssr";"shadowsocks";"naive";"socks";"https";"http"};mode="dropdown";z=12};
 cmbSecurity={cls="combobox";left=656;top=140;right=814;bottom=166;dr=1;dt=1;edge=1;items={"auto";"none";"chacha20-poly1305";"aes-128-gcm"};mode="dropdown";z=15};
 editAddress={cls="plus";left=656;top=183;right=878;bottom=207;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);textPadding={bottom=1};z=2};
 editId={cls="plus";left=656;top=263;right=986;bottom=287;align="left";bgcolor=16777215;border={bottom=1;color=-8355712};clip=1;dr=1;dt=1;editable="edit";font=LOGFONT(h=-16);notify=1;textPadding={right=75;bottom=1};z=20};
@@ -128,6 +128,18 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 		}
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
 		winform.editId.setCueBannerText("请输入密码");
+	}
+	elseif(sel=="tuic"){
+		winform.cmbSecurity.items = {"none";}
+		winform.cmbNetwork.items = {"quic";}
+		if(!keepExisting){
+			winform.cmbSecurity.selIndex = 1;
+			winform.outboundConfig.security = "none";
+			winform.cmbNetwork.selIndex = 1;
+			winform.outboundConfig.network = "quic";
+		}
+		winform.btnUpdateCore.text = '下载 / 更新支持组件： TUIC Core';
+		winform.editId.setCueBannerText("请输入 UUID:密码 或 UUID");
 	}
 	elseif(sel=="naive"){
 		winform.cmbNetwork.items = {
@@ -599,6 +611,16 @@ winform.btnGenGuid.oncommand = function(id,event){
 		winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
 		winform.updateSharedLink();
 	}
+	elseif(sel=="tuic"){
+		var guid = win.guid.create();
+		var p = string.random(12);
+		winform.editId.text = string.lower( tostring(guid) ) + ":" + p;
+		winform.outboundConfig.uuid = string.lower( tostring(guid) );
+		winform.outboundConfig.password = p;
+		winform.outboundConfig.id = winform.editId.text;
+		winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
+		winform.updateSharedLink();
+	}
 	elseif(sel=="shadowsocks" || sel=="ssr"  ){
 		winform.editId.text = string.random(22,"/@0123456abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 	}
@@ -652,7 +674,7 @@ winform.btnImportSharedLink.oncommand = function(id,event){
 		}
 	}
 
-	winform.msgFrown('未导入服务器！\r\n请先复制以下格式文本（自动清除其中的无效内容）：\r\n\r\n1、分享链接或服务器JSON配置。\r\n支持 vmess://，vless://，ss://，ssr://，trojan://， trojan-go:// 等通用分享链接。\r\n\r\n2、服务器配置的JSON数组,支持winXray格式以及通用格式JSON。\r\n其他 BASE64 编码或明文返回以上1、2条规定的配置或分享链接。')
+	winform.msgFrown('未导入服务器！\r\n请先复制以下格式文本（自动清除其中的无效内容）：\r\n\r\n1、分享链接或服务器JSON配置。\r\n支持 vmess://，vless://，tuic://，ss://，ssr://，trojan://， trojan-go:// 等通用分享链接。\r\n\r\n2、服务器配置的JSON数组,支持winXray格式以及通用格式JSON。\r\n其他 BASE64 编码或明文返回以上1、2条规定的配置或分享链接。')
 }
  
 winform.btnCopySharedLink.skin(style.link)
@@ -745,6 +767,19 @@ winform.btnUpdateCore.oncommand = function(id,event){
 		else {
 			winform.btnUpdateCore.disabledText = null;
 			winform.msgErr("NaÏveProxy Core 下载失败！");
+		} 		
+	}
+	elseif(sel=="tuic"){
+		import v2ray.core.tuic;
+		var versionTag = v2ray.core.tuic.updateCore();
+		if( versionTag ){
+			publish("uiCommand.restartV2RayCore");
+			winform.btnUpdateCore.disabledText = null;
+			winform.msgOk("TUIC Core（ tuic-client ） 已更新到：" + versionTag,1500)
+		}
+		else {
+			winform.btnUpdateCore.disabledText = null;
+			winform.msgErr("TUIC Core 下载失败！");
 		} 		
 	}	
 	else {

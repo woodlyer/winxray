@@ -6,6 +6,7 @@ winform.add(
 advancedConfig={cls="\forms\main\config\advancedConfig.aardio";left=9;top=20;right=930;bottom=594;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;z=12};
 btnUpdate={cls="plus";text="更新服务器配置";left=699;top=604;right=868;bottom=635;align="left";bgcolor=11580047;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=22}};iconText='\uF0C7';notify=1;textPadding={left=40};z=6};
 btnUpdateNaiveCore={cls="plus";text="下载 / 更新 NaÏveProxy Core";left=448;top=7;right=709;bottom=35;align="left";color=3947580;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-17;name='FontAwesome');padding={left=18}};iconText='\uF1A0';notify=1;textPadding={left=50};z=17};
+btnUpdateTuicCore={cls="plus";text="下载 / 更新 TUIC Core";left=448;top=39;right=670;bottom=67;align="left";color=3947580;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-17;name='FontAwesome');padding={left=18}};iconText='\uF1D8';notify=1;textPadding={left=50};z=20};
 btnUpdateRules={cls="plus";text="下载 / 更新 路由规则";left=227;top=39;right=425;bottom=67;align="left";color=3947580;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=18}};iconText='\uF041';notify=1;textPadding={left=50};z=15};
 btnUpdateSsrCore={cls="plus";text="下载 / 更新 SSR Core";left=16;top=39;right=214;bottom=67;align="left";color=3947580;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-17;name='FontAwesome');padding={left=18}};iconText='\uF1D8';notify=1;textPadding={left=50};z=16};
 btnUpdateV2RayCore={cls="plus";text="下载 / 更新 V2Ray Core";left=16;top=5;right=223;bottom=33;align="left";color=3947580;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=18}};iconText='\uF27D';notify=1;textPadding={left=50};z=13};
@@ -58,6 +59,7 @@ tbs.onSelchange = function(idx,strip,form){
 	winform.btnUpdateXrayCore.hide = idx!=4;
 	winform.btnUpdateRules.hide = idx!=4;
 	winform.btnUpdateNaiveCore.hide = idx!=4;
+	winform.btnUpdateTuicCore.hide = idx!=4;
 	winform.editCoreConfig.hide = idx!=4; 
 	winform.lbTipForCoreJson.hide = true; 
 	winform.btnUpdate.hide = (idx!=3 && idx!=4);
@@ -234,7 +236,7 @@ winform.editOutbounds.enablePopMenu(function(){
 						return; 
 					}
 		
-					winform.msgFrown('未导入服务器！\r\n请先复制以下格式文本（自动清除其中的无效内容）：\r\n\r\n1、一行或多行（忽略无效行）分享链接或服务器JSON配置。\r\n支持 vmess://，vless://，ss://，ssr://，trojan://， trojan-go:// 等通用分享链接。\r\n\r\n2、包含多个服务器配置的JSON数组。\r\n\r\n3、单个 http:// 或 https:// 开头的通用订阅源地址。\r\n订阅源地址支持直接使用github项目文件地址（网址含raw或blob目录名）。\r\n订阅源可以BASE64编码或明文返回以上1、2条规定的配置或分享链接。')
+					winform.msgFrown('未导入服务器！\r\n请先复制以下格式文本（自动清除其中的无效内容）：\r\n\r\n1、一行或多行（忽略无效行）分享链接或服务器JSON配置。\r\n支持 vmess://，vless://，tuic://，ss://，ssr://，trojan://， trojan-go:// 等通用分享链接。\r\n\r\n2、包含多个服务器配置的JSON数组。\r\n\r\n3、单个 http:// 或 https:// 开头的通用订阅源地址。\r\n订阅源地址支持直接使用github项目文件地址（网址含raw或blob目录名）。\r\n订阅源可以BASE64编码或明文返回以上1、2条规定的配置或分享链接。')
 				} 
 			};  
 		}
@@ -519,6 +521,26 @@ winform.editOutbounds.enablePopMenu(function(){
 						winform.editOutbounds.selText = '"concurrency":4,'
 					} 
 				};
+				{ "TUIC 拥塞控制:congestion_control";
+					function(id){
+						winform.editOutbounds.selText = '"congestion_control":"bbr",'
+					} 
+				};
+				{ "TUIC UDP转发模式:udp_relay_mode";
+					function(id){
+						winform.editOutbounds.selText = '"udp_relay_mode":"native",'
+					} 
+				};
+				{ "TUIC 0-RTT握手:zero_rtt_handshake";
+					function(id){
+						winform.editOutbounds.selText = '"zero_rtt_handshake":false,'
+					} 
+				};
+				{ "TUIC ALPN协商:alpn";
+					function(id){
+						winform.editOutbounds.selText = '"alpn":["h3"],'
+					} 
+				};
 		
 				{ "伪装类型:type";
 					function(id){
@@ -667,7 +689,7 @@ var editOutboundsTip = {
 	headers = {"HTTP请求头";"用于ws,http等协议指定请求头"}; 
 	id = {"密码";"服务器密码"}; 
 	host = {"主机名";"用于指定http,ws等协议请求头中的主机名"}; 
-	protocol = {"协议";"可选值为 vmess,vless,shadowsocks,trojan,trojan-go 之一"}; 
+	protocol = {"协议";"可选值为 vmess,vless,tuic,shadowsocks,trojan,trojan-go,naive 之一"}; 
 	port = {"端口";"服务器端口,数值"}; 
 	security = {"加密方式";"可省略,vmess协议默认为auto,vless协议默认为none"};
 	sni = {"TLS服务器名";"TLS客户端请求中的服务器名字段,如果不指定则默认取host或address字段值。"}; 
@@ -678,6 +700,10 @@ var editOutboundsTip = {
 	fingerprint = {"uTLS 客户端指纹";"模拟的浏览器指纹，如 chrome, firefox, safari, edge, random, randomized 等"};
 	serviceName = {"gRPC 业务名称";"gRPC 传输协议的 serviceName"};
 	allowInsecure = {"允许忽略证书";"布尔值 true/false。仅用于自签名证书的传统 TLS 节点"};
+	congestion_control = {"TUIC拥塞控制";"可选值为 bbr, cubic, new_reno，默认为 bbr"};
+	udp_relay_mode = {"TUIC UDP转发模式";"可选值为 native (默认) 或 quic"};
+	zero_rtt_handshake = {"TUIC 0-RTT握手";"布尔值 true/false"};
+	alpn = {"ALPN应用层协议协商";"如 [\"h3\"] 或 \"h3\""};
 	obfs = {"混淆插件";"可选值：plain,http_simple,http_post,tls1.2_ticket_auth ..."}; 
 	obfsParam = {"混淆参数";"SSR 里的 obfs_param"}; 
 	networkParam = {"SSR网络协议参数";"SSR 里的 protocol_param"}; 
@@ -800,6 +826,23 @@ winform.btnUpdateNaiveCore.oncommand = function(id,event){
 	else {
 		winform.btnUpdateNaiveCore.disabledText = null;
 		winform.msgErr("NaÏveProxy Core 下载失败！");
+	} 		
+}
+
+winform.btnUpdateTuicCore.skin(style.plainButton)
+winform.btnUpdateTuicCore.oncommand = function(id,event){
+	winform.btnUpdateTuicCore.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'};
+	
+	import v2ray.core.tuic;
+	var versionTag = v2ray.core.tuic.updateCore();
+	if( versionTag ){
+		publish("uiCommand.restartV2RayCore");
+		winform.btnUpdateTuicCore.disabledText = null;
+		winform.msgOk("TUIC Core（ tuic-client ） 已更新到：" + versionTag,1500)
+	}
+	else {
+		winform.btnUpdateTuicCore.disabledText = null;
+		winform.msgErr("TUIC Core 下载失败！");
 	} 		
 }
 

@@ -1,0 +1,106 @@
+//tuicJson 内核配置（TUIC）
+import web.json;   
+
+namespace v2ray.core.tuicJson;
+ 
+write = function(jsonPath,outbound,tuicSocksPort){
+    if(!outbound){ return; }
+	if(type(outbound.port) != type.number){
+		outbound.port = tonumber(outbound.port);
+	}
+
+	var user = outbound.user : outbound.uuid;
+	var password = outbound.password : outbound.passwd;
+	if(!user && outbound.id){
+		var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)");
+		if(u && p){
+			user = u;
+			if(!password) password = p;
+		}
+		else {
+			user = outbound.id;
+		} 
+	}
+
+	var alpnList = {"h3"};
+	if(outbound.alpn){
+		if(type(outbound.alpn) == type.table){
+			alpnList = outbound.alpn;
+		}
+		elseif(type(outbound.alpn) == type.string && #outbound.alpn){
+			alpnList = ..string.split(outbound.alpn,",");
+		}
+	}
+
+	var congestion = outbound.congestion_control : outbound.congestionController : outbound.congestion : "bbr";
+	var udpMode = outbound.udp_relay_mode : outbound.udpRelayMode : "native";
+	var skipCert = (outbound.allowInsecure || outbound.skip_cert_verify || outbound.skipCertVerify) ? true : false;
+	var zeroRtt = (outbound.zero_rtt_handshake || outbound.zeroRtt) ? true : false;
+	var disableSni = (outbound.disable_sni || outbound.disableSni) ? true : false;
+	var sniHost = outbound.sni;
+	if(!#sniHost && !disableSni){
+		sniHost = outbound.address;
+	}
+
+	var current = {
+		server = outbound.address + ":" + outbound.port;
+		uuid = user : "";
+		password = password : "";
+		udp_relay_mode = udpMode;
+		zero_rtt_handshake = zeroRtt;
+		timeout = "8s";
+		heartbeat = "3s";
+		gc_interval = "3s";
+		gc_lifetime = "15s";
+		reconnect = true;
+		lazy = true;
+		tls = {
+			sni = sniHost;
+			alpn = alpnList;
+			disable_sni = disableSni;
+			skip_cert_verify = skipCert;
+		};
+		backend = {
+			mode = "quinn";
+			quinn = {
+				congestion_control = {
+					controller = congestion;
+				};
+				send_window = 16777216;
+				receive_window = 8388608;
+				initial_mtu = 1200;
+				min_mtu = 1200;
+				gso = true;
+				pmtu = true;
+			}
+		};
+		local = {
+			server = "127.0.0.1:" + tuicSocksPort;
+			max_packet_size = 1500;
+		};
+		// 同时保留 relay 字段结构以兼容旧版/各衍生版 tuic-client
+		relay = {
+			server = outbound.address + ":" + outbound.port;
+			uuid = user : "";
+			password = password : "";
+			sni = sniHost;
+			alpn = alpnList;
+			disable_sni = disableSni;
+			congestion_control = congestion;
+			udp_relay_mode = udpMode;
+			zero_rtt_handshake = zeroRtt;
+			skip_cert_verify = skipCert;
+			heartbeat = "3s";
+			timeout = "8s";
+		};
+		log_level = "warn";
+	};
+
+	if(outbound.ip){
+		current.ip = outbound.ip;
+		current.relay.ip = outbound.ip;
+	}
+
+	..string.save(jsonPath,..web.json.stringify(current,true,false) );
+	return jsonPath;
+}

@@ -1,6 +1,7 @@
 //内核进程
 import v2ray.core.ssr;
 import v2ray.core.naive;
+import v2ray.core.tuic;
 import wsock.tcp.server;
 import process.popen;
 import config;
@@ -63,6 +64,12 @@ restart = function(editor,outbound){
 			return false,"启动失败,未找到 NaïveProxy Core";
 		}
 	}
+	if( outbound.protocol == "tuic" ){ 
+		if(!..v2ray.core.tuic.getPath(editor.hwnd)){
+			v2RayStarting = false;
+			return false,"启动失败,未找到 TUIC Core";
+		}
+	}
 	
 	..publish("activeOutbound",false);
 	
@@ -82,6 +89,7 @@ restart = function(editor,outbound){
 	
 	..v2ray.core.ssr.stop();
 	..v2ray.core.naive.stop();
+	..v2ray.core.tuic.stop();
 	
 	var nexCore;
 	if( outbound.protocol == "ssr" ){  
@@ -103,7 +111,7 @@ restart = function(editor,outbound){
 		var nextProxyPort = ..wsock.getFreePort();
 		if(!..v2ray.core.naive.restart(editor,outbound,nextProxyPort)){
 			v2RayStarting = false;
-			return false,"SSR Core 启动失败";
+			return false,"NaïveProxy Core 启动失败";
 		}
 
 		outbound = {
@@ -113,6 +121,21 @@ restart = function(editor,outbound){
 		} 
 		
 		nexCore = ..v2ray.core.naive;
+	}
+	elseif( outbound.protocol == "tuic" ){  
+		var nextProxyPort = ..wsock.getFreePort();
+		if(!..v2ray.core.tuic.restart(editor,outbound,nextProxyPort)){
+			v2RayStarting = false;
+			return false,"TUIC Core 启动失败";
+		}
+
+		outbound = {
+			protocol = "socks";
+			address = "127.0.0.1";
+			port = nextProxyPort;
+		} 
+		
+		nexCore = ..v2ray.core.tuic;
 	}
 
 	if( ! prcsV2Ray ){ 
@@ -174,6 +197,8 @@ restart = function(editor,outbound){
 
 stop = function(){
 	..v2ray.core.ssr.stop();
+	..v2ray.core.naive.stop();
+	..v2ray.core.tuic.stop();
 	
 	if(prcsV2Ray){
 		prcsV2Ray.terminate();
