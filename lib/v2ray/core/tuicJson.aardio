@@ -49,42 +49,6 @@ write = function(jsonPath,outbound,tuicSocksPort){
 	}
 
 	var current = {
-		server = outbound.address + ":" + outbound.port;
-		uuid = user : "";
-		password = password : "";
-		udp_relay_mode = udpMode;
-		zero_rtt_handshake = zeroRtt;
-		timeout = "8s";
-		heartbeat = "3s";
-		gc_interval = "3s";
-		gc_lifetime = "15s";
-		reconnect = true;
-		lazy = true;
-		tls = {
-			sni = sniHost;
-			alpn = alpnList;
-			disable_sni = disableSni;
-			skip_cert_verify = skipCert;
-		};
-		backend = {
-			mode = "quinn";
-			quinn = {
-				congestion_control = {
-					controller = congestion;
-				};
-				send_window = 16777216;
-				receive_window = 8388608;
-				initial_mtu = 1200;
-				min_mtu = 1200;
-				gso = true;
-				pmtu = true;
-			}
-		};
-		local = {
-			server = "127.0.0.1:" + tuicSocksPort;
-			max_packet_size = 1500;
-		};
-		// 同时保留 relay 字段结构以兼容旧版/各衍生版 tuic-client
 		relay = {
 			server = outbound.address + ":" + outbound.port;
 			uuid = user : "";
@@ -99,11 +63,13 @@ write = function(jsonPath,outbound,tuicSocksPort){
 			heartbeat = "3s";
 			timeout = "8s";
 		};
+		local = {
+			server = "127.0.0.1:" + tuicSocksPort;
+		};
 		log_level = outbound.log_level : outbound.logLevel : "error";
 	};
 
 	if(outbound.ip){
-		current.ip = outbound.ip;
 		current.relay.ip = outbound.ip;
 	}
 
