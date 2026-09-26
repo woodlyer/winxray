@@ -4,6 +4,8 @@ import wsock.tcp.server;
 import v2ray.core.tuicJson;
 import process.popen;
 import config;
+import win.dlg.message;
+import inet.downBox;
 
 namespace v2ray.core.tuic;
 
@@ -58,17 +60,7 @@ var getTuicCoreUrl = function(){
 	
 	var url,versionTag = ..win.invoke(function(){
     	import process;
-		import inet.http;
-		var http = ..inet.http();
-		var url = http.location("https://github.com/tuic-protocol/tuic/releases/latest");
-		http.close();
-		
 		var tag = "tuic-client-1.0.0";
-		if(url){
-			var t = ..string.match(url,"[^/]+$");
-			if(t && (t!="latest")) tag = t;
-		}
-
 		var arch = ..process().isWow64() ? "x86_64" : "i686";
 		return "https://github.com/tuic-protocol/tuic/releases/download/" 
 			+ tag + "/tuic-client-1.0.0-" + arch + "-pc-windows-msvc.exe", tag	
@@ -93,33 +85,17 @@ downloadCore = function(){
 		return null;
 	}
 	
-	import inet.httpFile;
-	import zlib.httpFile;
+	import inet.downBox;
 	var targetExe = ..io.joinpath(coreDir,"tuic-client.exe");
 	..io.createDir(coreDir);
 
-	var ok = false;
-	if(..string.endWith(url,".exe",true)){
-		ok = ..inet.httpFile.download(url,"正在下载 TUIC Core",..io.appData("/winXray/download/tuic-client.exe"),targetExe,,..mainForm.hwnd);
-	}
-	else {
-		ok = ..zlib.httpFile.download(url,"正在下载 TUIC Core",..io.appData("/winXray/download/tuic"),coreDir,,..mainForm.hwnd);
-	}
+	var downBox = ..inet.downBox(..mainForm.hwnd,"正在下载 TUIC Core",true);
+	var ok = downBox.download(url, targetExe);
 
-	if(ok){
-		..fsys.enum( coreDir, "tuic*.exe",
-			function(dir,filename,fullpath,findData){ 
-				if(filename && (filename != "tuic-client.exe")){  
-					..fsys.copy(fullpath,targetExe);
-					return false;
-				}
-			} 
-		);
-			
+	if(ok && ..io.exist(targetExe)){
 		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = null;
-		
-		return ..io.exist(targetExe);
+		return targetExe;
 	}
 	else {
 		..mainForm.disabled = false;
@@ -219,54 +195,28 @@ updateCore = function(){
 	import fsys;
 	fsys.delete(..io.appData("/winXray/temp/tuic/"))
  
-	import inet.httpFile;
-	import zlib.httpFile;
+	import inet.downBox;
 	var targetExe = ..io.joinpath(coreDir,"tuic-client.exe");
 	var tempExe = ..io.appData("/winXray/temp/tuic/tuic-client.exe");
 	..io.createDir(..io.appData("/winXray/temp/tuic/"));
 
-	var ok = false;
-	if(..string.endWith(url,".exe",true)){
-		ok = ..inet.httpFile.download(url,"正在下载 TUIC Core，版本：" + versionTag,..io.appData("/winXray/download/tuic-client.exe"),tempExe,,..mainForm.hwnd);
-	}
-	else {
-		ok = ..zlib.httpFile.download(url,"正在下载 TUIC Core，版本：" + versionTag,..io.appData("/winXray/download/tuic/"),..io.appData("/winXray/temp/tuic/"),,..mainForm.hwnd);
-	}
+	var downBox = ..inet.downBox(..mainForm.hwnd,"正在下载 TUIC Core，版本：" + versionTag,true);
+	var ok = downBox.download(url, tempExe);
 
-	if( ok ){
+	if( ok && ..io.exist(tempExe) ){
 		..mainForm.disabled = false;
 		
-		var tuicPath;
-		if(..io.exist(tempExe)){
-			tuicPath = tempExe;
-		}
-		else {
-			fsys.enum( ..io.appData("/winXray/temp/tuic/"), "tuic*.exe",
-				function(dir,filename,fullpath,findData){ 
-					if(filename){ 
-						tuicPath = fullpath; 
-						return false;
-					}
-				} 
-			);
-		}
-		
-		if(tuicPath){
-			import sysProxy;
-			sysProxy.reset(false);
+		import sysProxy;
+		sysProxy.reset(false);
 
-			import process.file;
-			process.file.terminate(targetExe); 
-			
-			..io.createDir(coreDir);  
-			fsys.copy(tuicPath,targetExe);  
-			
-			self.lastDownloadingCoreFailed = null;
-			return versionTag;
-		} 
-		else {
-			self.lastDownloadingCoreFailed = true;
-		} 
+		import process.file;
+		process.file.terminate(targetExe); 
+		
+		..io.createDir(coreDir);  
+		fsys.copy(tempExe,targetExe);  
+		
+		self.lastDownloadingCoreFailed = null;
+		return versionTag;
 	}
 	else {
 		..mainForm.disabled = false;
