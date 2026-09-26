@@ -24,6 +24,8 @@
 /ssr-core/
 /download/
 /temp/
+/WinXray/
+/winXray/
 
 # Logs and local configurations
 *.log
