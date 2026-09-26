@@ -30,10 +30,10 @@ restart = function(editor,outbound,tuicSocksPort){
 	}
 	 
 	var err;
-	prcsTuic,err = ..process.popen(corePath,corePath,"-c","config.json" );
+	prcsTuic,err = ..process.popen(corePath, "-c", configPath);
 	if(!prcsTuic){
 		..publish("uiCommand.print",err:"启动 TUIC Core 时遇到未知错误!");  
-		return;
+		return false,err;
 	}
 	else{
 		..publish("uiCommand.print","TUIC Core 已启动，端口:" + tuicSocksPort);  
