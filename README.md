@@ -137,37 +137,38 @@ IP 段代理规则：
 <span style="color:green">Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WinHttpAutoProxySvc</span>
 将 start 的值改为 2， 也就是将 WinHttpAutoProxySvc 服务改为自动启动，然后重启计算机即可。
 
-# Core 默认路径：
+# Core 默认路径与下载地址
 
-可在「 winXray/ 配置 / Core配置 」 下载更新 V2Ray Core / Xray Core / SSR Core ，  
-下载更新 V2Ray Core（或 Xray Core）完成后会自动切换 V2Ray 内核。
+可在「 winXray / 配置 / Core配置 」一键下载更新各核心。找不到会自动在线下载，也可以手动下载放入对应目录：
 
-默认会在以下目录查找 V2Ray Core（或 Xray Core）：
+### 1. Xray Core
+- **查找目录**：`./xray-core/` 或 `./v2ray-core/` 或 `%localappdata%\winXray\core`
+- **最新版本发布**：https://github.com/XTLS/Xray-core/releases
+- ⚠️ **特别注意（推荐版本：v25.1.1）**：
+  Xray-core 自 `v25.1.1` 之后的版本移除了 TLS 的 `allowInsecure` 选项支持。如果您需要连接自签名证书或未配置权威证书的节点，请使用 **[Xray-core v25.1.1](https://github.com/XTLS/Xray-core/releases/tag/v25.1.1)**：
+  - [Xray-windows-64.zip (v25.1.1 64位下载)](https://github.com/XTLS/Xray-core/releases/download/v25.1.1/Xray-windows-64.zip)
+  - [Xray-windows-32.zip (v25.1.1 32位下载)](https://github.com/XTLS/Xray-core/releases/download/v25.1.1/Xray-windows-32.zip)
+  解压后将 `xray.exe` 放入 `./xray-core/` 目录即可。
 
-    ./v2ray-core/
-    %localappdata%\winXray\core
+### 2. TUIC Core (tuic-client)
+- **查找目录**：`./tuic-core/` 或 `%localappdata%\winXray\tuic-core`（亦支持直接放在软件同级目录）
+- **项目仓库**：https://github.com/Itsusinn/tuic
+- **Releases 发布页**：https://github.com/Itsusinn/tuic/releases
+- **Windows 下载直链**：
+  - [64位：tuic-client-x86_64-windows.exe](https://github.com/Itsusinn/tuic/releases/download/v2.0.0-dev7/tuic-client-x86_64-windows.exe)
+  - [32位：tuic-client-i686-windows.exe](https://github.com/Itsusinn/tuic/releases/download/v2.0.0-dev7/tuic-client-i686-windows.exe)
+  下载后重命名为 `tuic-client.exe` 保存到 `./tuic-core/` 目录即可。
 
-默认会在以下目录查找 SSR Core：
+### 3. SSR Core
+- **查找目录**：`./v2ray-core/ssr-core` 或 `%localappdata%\winXray\ssr-core`
 
-    ./v2ray-core/ssr-core
-    %localappdata%\winXray\ssr-core
+### 4. NaïveProxy Core
+- **查找目录**：`./v2ray-core/naive-core` 或 `%localappdata%\winXray\naive-core`
+- **Releases 发布页**：https://github.com/klzgrad/naiveproxy/releases
 
-默认会在以下目录查找 NaïveProxy Core：
+> 提示：没有代理直连访问 Github 可能会很慢或超时，建议在 winXray 的「工具」页中运行自带的【Github 网速优化工具】加速访问。
 
-    ./v2ray-core/naive-core
-    %localappdata%\winXray\naive-core
-
-默认会在以下目录查找 TUIC Core：
-
-    ./tuic-core
-    %localappdata%\winXray\tuic-core
-
-找不到会自动下载，没有代理访问 Github 会很慢很慢，有时可能根本打不开，建议经常运行一下 winXray 工具里自带的 【Github 网速优化工具】
-
-注意不同的代理协议连接时会调用不同的 Core，   
-例如 NaïveProxy 连接时会启动 naive.exe，这时候系统防火墙会有提示，  
-如果这时候没看清就点了拒绝，那么就无法正常使用相应的 Core 了，  
-所以请看清楚再点，点错了到系统防火墙里再打开一下就可以了。  
+注意不同的代理协议连接时会调用不同的 Core，例如 NaïveProxy 连接时会启动 naive.exe，TUIC 连接时会启动 tuic-client.exe，此时系统防火墙如弹出提示请点击允许。  
 
 # 安装 NaïveProxy 服务端 
 
