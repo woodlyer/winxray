@@ -144,8 +144,8 @@ IP 段代理规则：
 ### 1. Xray Core
 - **查找目录**：`./xray-core/` 或 `./v2ray-core/` 或 `%localappdata%\winXray\core`
 - **最新版本发布**：https://github.com/XTLS/Xray-core/releases
-- ⚠️ **特别注意（推荐版本：v25.1.1）**：
-  Xray-core 自 `v25.1.1` 之后的版本移除了 TLS 的 `allowInsecure` 选项支持。如果您需要连接自签名证书或未配置权威证书的节点，请使用 **[Xray-core v25.1.1](https://github.com/XTLS/Xray-core/releases/tag/v25.1.1)**：
+- ⚠️ **特别提示（推荐兼容版本：v25.1.1）**：
+  较新版本的 Xray-core 逐步废弃并移除了 TLS 配置中的 `allowInsecure` 选项（改用证书哈希绑定等机制，直接配置可能导致内核启动报错）。如果您的节点使用了自签名证书，或需要保持对 `allowInsecure` 选项的完整兼容，推荐使用经过实测兼容稳定的 **[Xray-core v25.1.1](https://github.com/XTLS/Xray-core/releases/tag/v25.1.1)**：
   - [Xray-windows-64.zip (v25.1.1 64位下载)](https://github.com/XTLS/Xray-core/releases/download/v25.1.1/Xray-windows-64.zip)
   - [Xray-windows-32.zip (v25.1.1 32位下载)](https://github.com/XTLS/Xray-core/releases/download/v25.1.1/Xray-windows-32.zip)
   解压后将 `xray.exe` 放入 `./xray-core/` 目录即可。
