@@ -54,16 +54,26 @@ stop = function(){
 
 var getTuicCoreUrl = function(){
     var msgDlg = ..win.dlg.message(..mainForm); 
-	var form = msgDlg.create('正在获取 TUIC Core 最新版本',,true)
+	var form = msgDlg.create('正在获取 TUIC Core 最新版本',,true);
 	form.icon = '\uF1D8';
 	form.progress.startProgress(50); 
 	
 	var url,versionTag = ..win.invoke(function(){
     	import process;
-		var tag = "tuic-client-1.0.0";
+		import inet.http;
+		var http = ..inet.http();
+		var loc = http.location("https://github.com/Itsusinn/tuic/releases/latest");
+		http.close();
+		
+		var tag;
+		if(loc){
+			tag = ..string.match(loc,"[^/]+$");
+		}
+		if(!tag || (tag=="latest")) tag = "v2.0.0-dev7";
+		
 		var arch = ..process().isWow64() ? "x86_64" : "i686";
-		return "https://github.com/tuic-protocol/tuic/releases/download/" 
-			+ tag + "/tuic-client-1.0.0-" + arch + "-pc-windows-msvc.exe", tag	
+		return "https://github.com/Itsusinn/tuic/releases/download/" 
+			+ tag + "/tuic-client-" + arch + "-windows.exe", tag;	
 	});
 	
 	form.close();
@@ -71,16 +81,15 @@ var getTuicCoreUrl = function(){
 	return url,versionTag; 
 }
 
-downloadCore = function(){
-	..mainForm.disabled = true;
+downloadCore = function(parentForm){
+	var parent = parentForm : ..mainForm;
 
 	var url,versionTag = getTuicCoreUrl();
 	var coreDir = getCoreDir();
 	if(!url) {
-		..publish("uiCommand.print","请下载 TUIC Core 解压到以下目录内:");
+		..publish("uiCommand.print","请下载 TUIC Core 保存到以下目录内:");
 		..publish("uiCommand.print",coreDir);
 		
-		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = true;
 		return null;
 	}
@@ -89,16 +98,18 @@ downloadCore = function(){
 	var targetExe = ..io.joinpath(coreDir,"tuic-client.exe");
 	..io.createDir(coreDir);
 
-	var downBox = ..inet.downBox(..mainForm.hwnd,"正在下载 TUIC Core",true);
+	var downBox = ..inet.downBox(parent,"正在下载 TUIC Core",true);
+	if(!downBox){
+		self.lastDownloadingCoreFailed = true;
+		return null;
+	}
 	var ok = downBox.download(url, targetExe);
 
 	if(ok && ..io.exist(targetExe)){
-		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = null;
 		return targetExe;
 	}
 	else {
-		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = true;
 		
 		..publish("uiCommand.print","请到以下网址下载 TUIC Core (tuic-client.exe):");
@@ -181,31 +192,32 @@ getCoreDir = function(hwnd){
 	return ..io.appData("/winXray/tuic-core/");
 } 
 
-updateCore = function(){
-  	..mainForm.disabled = true; 
+updateCore = function(parentForm){
+	var parent = parentForm : ..mainForm;
   	
 	var coreDir = getCoreDir(); 
 	var url,versionTag = getTuicCoreUrl();
 	if(!url){		
-		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = true;
 		return null;
 	}
 	
 	import fsys;
-	fsys.delete(..io.appData("/winXray/temp/tuic/"))
+	fsys.delete(..io.appData("/winXray/temp/tuic/"));
  
 	import inet.downBox;
 	var targetExe = ..io.joinpath(coreDir,"tuic-client.exe");
 	var tempExe = ..io.appData("/winXray/temp/tuic/tuic-client.exe");
 	..io.createDir(..io.appData("/winXray/temp/tuic/"));
 
-	var downBox = ..inet.downBox(..mainForm.hwnd,"正在下载 TUIC Core，版本：" + versionTag,true);
+	var downBox = ..inet.downBox(parent,"正在下载 TUIC Core，版本：" + versionTag,true);
+	if(!downBox){
+		self.lastDownloadingCoreFailed = true;
+		return null;
+	}
 	var ok = downBox.download(url, tempExe);
 
 	if( ok && ..io.exist(tempExe) ){
-		..mainForm.disabled = false;
-		
 		import sysProxy;
 		sysProxy.reset(false);
 
@@ -219,7 +231,6 @@ updateCore = function(){
 		return versionTag;
 	}
 	else {
-		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = true; 
 	}  
 }

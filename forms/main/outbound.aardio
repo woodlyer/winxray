@@ -773,7 +773,7 @@ winform.btnUpdateCore.oncommand = function(id,event){
 	}
 	elseif(sel=="tuic"){
 		import v2ray.core.tuic;
-		var versionTag = v2ray.core.tuic.updateCore();
+		var versionTag = v2ray.core.tuic.updateCore(winform);
 		if( versionTag ){
 			publish("uiCommand.restartV2RayCore");
 			winform.btnUpdateCore.disabledText = null;
