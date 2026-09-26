@@ -121,6 +121,11 @@ downloadCore = function(parentForm){
 }
  
 getPath = function(hwnd){
+	var path = ..io.fullpath("/tuic-core/tuic-client.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
 	var path = ..io.fullpath("/xray-core/tuic-core/tuic-client.exe");
 	if(..io.exist(path)){
 		return path;
@@ -144,6 +149,11 @@ getPath = function(hwnd){
 } 
 
 getCoreDir = function(hwnd){
+	var path = ..io.fullpath("/tuic-core/tuic-client.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/tuic-core/");
+	}
+
 	var path = ..io.fullpath("/xray-core/tuic-core/tuic-client.exe");
 	if(..io.exist(path)){
 		return ..io.fullpath("/xray-core/tuic-core/");
@@ -159,34 +169,12 @@ getCoreDir = function(hwnd){
 		return ..io.appData("/winXray/tuic-core/");
 	}
 	
-	var path = ..io.fullpath("/xray-core/xray.exe");
-	if(..io.exist(path)){
-		return ..io.fullpath("/xray-core/tuic-core/");
-	}
-
-	var path = ..io.fullpath("/v2ray-core/v2ray.exe");
-	if(..io.exist(path)){
-		return ..io.fullpath("/v2ray-core/tuic-core/");
-	}
-		
-	var path = ..io.appData("/winXray/core/xray.exe");
-	if(..io.exist(path)){
-		return ..io.appData("/winXray/tuic-core/");
-	}
-
-	var path = ..io.appData("/winXray/core/v2ray.exe");
-	if(..io.exist(path)){
-		return ..io.appData("/winXray/tuic-core/");
+	if(..io.exist(..io.fullpath("/tuic-core/"))){
+		return ..io.fullpath("/tuic-core/");
 	}
 	
-	var path = ..io.fullpath("/xray-core/");
-	if(..io.exist(path)){
-		return ..io.fullpath("/xray-core/tuic-core/");
-	}
-
-	var path = ..io.fullpath("/v2ray-core/");
-	if(..io.exist(path)){
-		return ..io.fullpath("/v2ray-core/tuic-core/");
+	if(..io.exist(..io.fullpath("/xray-core/")) || ..io.exist(..io.fullpath("/v2ray-core/"))){
+		return ..io.fullpath("/tuic-core/");
 	}
 		
 	return ..io.appData("/winXray/tuic-core/");

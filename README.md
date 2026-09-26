@@ -154,6 +154,11 @@ IP 段代理规则：
     ./v2ray-core/naive-core
     %localappdata%\winXray\naive-core
 
+默认会在以下目录查找 TUIC Core：
+
+    ./tuic-core
+    %localappdata%\winXray\tuic-core
+
 找不到会自动下载，没有代理访问 Github 会很慢很慢，有时可能根本打不开，建议经常运行一下 winXray 工具里自带的 【Github 网速优化工具】
 
 注意不同的代理协议连接时会调用不同的 Core，   
