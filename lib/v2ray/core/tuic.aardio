@@ -55,7 +55,7 @@ stop = function(){
 var getTuicCoreUrl = function(){
     var msgDlg = ..win.dlg.message(..mainForm); 
 	var form = msgDlg.create('正在获取 TUIC Core 最新版本',,true);
-	form.icon = '\uF1D8';
+	form.icon = '\uF135';
 	form.progress.startProgress(50); 
 	
 	var url,versionTag = ..win.invoke(function(){
