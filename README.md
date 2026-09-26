@@ -11,32 +11,35 @@ WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版
 
 ---
 
-## 📝 本版本更新内容 (Current Version)
+## 📝 本版本更新内容 (Current Version - v3.15)
 
-### 1. 默认路由与分流优化
-- **内置大陆直连规则**：默认集成大陆域名 (`geosite:cn`) 以及大陆/局域网 IP (`geoip:cn`, `geoip:private`) 直连规则，避免国内流量绕外网；
-- **API 规则置顶**：内部通信规则置顶优先处理；同时预置了广告拦截 (`geosite:category-ads-all`) 备用规则；
-- **右键快捷插入**：在「配置 -> Core 配置 (JSON)」中新增右键快捷插入常用路由规则功能。
+### 1. 全面支持 TUIC (v5) 协议
+- **协议完整支持**：全面支持基于 QUIC 的新一代低延迟代理协议 TUIC；
+- **分享链接与配置导入**：支持标准 `tuic://` 分享链接的解析与导入，支持通用 JSON 格式配置；
+- **独立内核调度架构**：接入 [Itsusinn/tuic](https://github.com/Itsusinn/tuic) 内核，winXray 在后台自动启动 `tuic-client.exe` 并由 Xray Core 统一进行路由规则分流与代理接管；
+- **节点编辑界面适配**：支持直观配置 UUID、密码、SNI、ALPN、拥塞控制算法（BBR / Cubic / NewReno）、UDP Relay 模式（Native / QUIC）、0-RTT 握手等；一键生成随机 UUID。
 
-### 2. 内核管理机制彻底重构
-- **原生 Xray 运行**：彻底移除下载后强行将 `xray.exe` 改名为 `v2ray.exe` 及目录重命名的遗留逻辑，直接原生调用 `xray.exe run -c config.json`；
-- **优先加载本地内核**：优先匹配软件同级目录下 `./xray-core/xray.exe` 便携内核，并向下兼容旧版 `v2ray.exe`。
+### 2. TUIC 内核在线下载与自动维护
+- **一键在线获取**：配置界面新增「下载 / 更新 TUIC Core」专属按钮，自动匹配 Windows 32位/64位 平台并高速下载最新版本；
+- **便携路径优先**：优先识别并存放于应用程序同级 `./tuic-core/tuic-client.exe`（绿色便携模式），向下兼容历史路径与系统缓存路径；
+- **配置纯净精简**：TUIC 运行时配置精简为标准的 `relay` 与 `local` 架构，默认日志级别提升至 `error`，过滤心跳冗余警告并禁用 ANSI 彩色控制乱码。
 
-### 3. 节点配置与交互体验改进
-- **所见即所得认证**：SOCKS / HTTP / Naïve 认证在 JSON 配置区支持直观的 `"user"` 与 `"password"` 字段；
-- **默认证书忽略选项**：编辑/新增节点时左侧 JSON 默认赋 `"allowInsecure": true`，方便自签名节点快速调试；
-- **修复保存崩溃**：修复在保存节点时偶发的 `Attempt to get length of number 'port'` 运行时异常；
-- **避免误触发测速重连**：打开节点查看后直接点 ❌ 关闭时，主界面不再误触发重新测速与节点切换；
-- **右键菜单优化**：将高频的「编辑 / 新增代理服务器」提至右键第 2 项；
-- **节点自由排序**：支持右键或快捷键（`Ctrl+Up/Down`, `Alt+Up/Down`）连续上移、下移、置顶、置底。
-
-### 4. 自动连接与界面优化
-- **启动测速策略改进**：新增延迟收集窗口与分档比对机制，延迟极低或相当时优先连接排在靠前的节点；
-- **UI 细节调整**：优化侧边栏退出按钮图标尺寸与粗细，视觉更加均衡精致；规范启动代理提示文案排版。
+### 3. 细节修复与体验优化
+- **修复节点回显缺失**：修复在编辑节点时因字段提取缺陷导致仅显示密码、丢失用户 UUID 的问题；
+- **修正证书校验逻辑**：移除对 TUIC 节点的自动强制忽略证书行为，默认执行严格的 TLS 证书校验；
+- **修复下载弹窗异常**：修复在线更新核心时传递窗口句柄导致 `metaProperty` 空方法报错的问题；
+- **修正命令行参数**：修复 `tuic-client` 进程启动时多余位置参数导致的命令行崩溃；
+- **专属火箭图标**：TUIC 下载更新按钮及进度弹窗更换为 FontAwesome 火箭图标（`\uF135` / `fa-rocket`），更直观体现极速低延迟特性。
 
 ---
 
 ## 📜 历史版本更新记录 (Changelog)
+
+### v3.12
+- **默认路由与分流优化**：默认集成大陆域名 (`geosite:cn`) 以及大陆/局域网 IP (`geoip:cn`, `geoip:private`) 直连规则，避免国内流量绕外网；API 规则置顶优先处理，预置广告拦截备用规则；
+- **内核管理机制重构**：直接原生调用 `xray.exe run -c config.json`，优先匹配本地便携内核；
+- **节点配置与排序优化**：SOCKS / HTTP / Naïve 支持直观的 `"user"` 与 `"password"` 字段；支持节点自由快捷键排序；
+- **测速策略与UI调整**：优化启动测速比对分档机制，微调侧边栏图标与提示排版。
 
 ### v3.11
 - **REALITY 协议支持**：完整支持 VLESS + REALITY 协议配置（`publicKey` / `shortId` / `spiderX` / `fingerprint`）；
@@ -60,7 +63,7 @@ WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版
 --------------------------------------------------------------------------------------------------
 
 # WinXray 
-WinXray[:loud_sound:](http://dict.youdao.com/dictvoice?audio=winxray&type=2) 是最简洁轻快的 V2Ray、XRay、Trojan、Trojan-go、Shadowsocks、SSR(ShadowsocksR)、SSRoT、NaïveProxy，SOCKS，HTTP,HTTPS 全能通用客户端（Windows系统），支持并发检测大量服务器并迅速找到当前最快的服务器，服务器连接异常时可自动寻找其他速度最快的服务器 - 切换速度快如闪电，自订阅源获取的服务器异常时可自动刷新订阅，并且自带一键自动部署服务端工具。
+WinXray[:loud_sound:](http://dict.youdao.com/dictvoice?audio=winxray&type=2) 是最简洁轻快的 V2Ray、XRay、Trojan、Trojan-go、Shadowsocks、SSR(ShadowsocksR)、SSRoT、NaïveProxy、TUIC，SOCKS，HTTP,HTTPS 全能通用客户端（Windows系统），支持并发检测大量服务器并迅速找到当前最快的服务器，服务器连接异常时可自动寻找其他速度最快的服务器 - 切换速度快如闪电，自订阅源获取的服务器异常时可自动刷新订阅，并且自带一键自动部署服务端工具。
 
 **本软件源码已放弃版权贡献到公共域** ，源码可使用 [aardio](http://www.aardio.com) 编译生成单文件绿色EXE，**[点这里下载](./../../raw/master/release/winXray.7z)** （ [64位版本](./../../raw/master/release/winXray.7z) / [32位版本](./../../raw/master/release/winXray32.7z) ），解压即可直接使用( 体积很小仅  **[6.1 MB](./../../raw/master/release/winXray.7z)** - 已自带 V2Ray Core ）。  
 
