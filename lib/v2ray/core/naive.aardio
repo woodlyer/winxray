@@ -74,6 +74,14 @@ stop = function(){
 		prcsNaive.terminate();
 		prcsNaive = null;
 	} 
+	import process.file;
+	var coreDir = ..io.appData("/winXray/core/");
+	process.file.terminate(..io.joinpath(coreDir,"naive.exe")); 
+	process.file.terminate("naive.exe");
+}
+
+isRunning = function(){
+	return !!prcsNaive;
 }
 
 var getNaiveCoreUrl = function(){

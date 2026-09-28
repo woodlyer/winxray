@@ -53,6 +53,14 @@ stop = function(){
 		prcsTuic.terminate();
 		prcsTuic = null;
 	} 
+	import process.file;
+	var targetExe = getPath();
+	if(targetExe) process.file.terminate(targetExe);
+	process.file.terminate("tuic-client.exe");
+}
+
+isRunning = function(){
+	return !!prcsTuic;
 }
 
 var getTuicCoreUrl = function(){

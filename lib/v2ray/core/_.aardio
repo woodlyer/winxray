@@ -205,14 +205,32 @@ stop = function(){
 		prcsV2Ray = null;
 	}
 	
+	import process.file;
+	var xrayPath = getPath();
+	if(xrayPath){
+		process.file.terminate(xrayPath);
+	}
+	process.file.terminate("xray.exe"); 
+	process.file.terminate("v2ray.exe"); 
+	process.file.terminate("v2ctl.exe"); 
+	process.file.terminate("tuic-client.exe");
+	process.file.terminate("naive.exe");
+	process.file.terminate("ssr-client.exe");
+	
 	..sysProxy.reset(false);
 
 	import v2ray.github;
    	v2ray.github.setProxy(false);
+   	
+   	..publish("v2RayCore.stopped");
 }
 
 isRunning = function(){
-	return !!prcsV2Ray;
+	if(prcsV2Ray) return true;
+	if(..v2ray.core.tuic && ..v2ray.core.tuic.isRunning && ..v2ray.core.tuic.isRunning()) return true;
+	if(..v2ray.core.naive && ..v2ray.core.naive.isRunning && ..v2ray.core.naive.isRunning()) return true;
+	if(..v2ray.core.ssr && ..v2ray.core.ssr.isRunning && ..v2ray.core.ssr.isRunning()) return true;
+	return false;
 }
 
 var getV2RayCoreUrl = function(){
