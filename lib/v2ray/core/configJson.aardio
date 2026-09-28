@@ -84,17 +84,21 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 			}
 		}
 			
-		var rawPk = outbound.publicKey : outbound.pbk : "";
+		var rawPk = outbound.publicKey : outbound.pbk : outbound.publickey : "";
 		if(#rawPk){
 			rawPk = ..string.trim(rawPk, '"\'\s\r\n ');
+			var hashPos = ..string.indexOf(rawPk, "#");
+			if(hashPos) rawPk = ..string.left(rawPk, hashPos - 1);
 			rawPk = ..string.replace(rawPk, "@+", "-");
 			rawPk = ..string.replace(rawPk, "@/", "_");
 			rawPk = ..string.replace(rawPk, "@=", "");
 		}
 		
-		var rawSid = outbound.shortId : outbound.sid : "";
+		var rawSid = outbound.shortId : outbound.sid : outbound.shortid : "";
 		if(#rawSid){
 			rawSid = ..string.trim(rawSid, '"\'\s\r\n ');
+			var hashPos = ..string.indexOf(rawSid, "#");
+			if(hashPos) rawSid = ..string.left(rawSid, hashPos - 1);
 		}
 
 		var ob = {

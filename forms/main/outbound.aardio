@@ -217,6 +217,20 @@ winform.cmbNetwork.onListChange = function(){
 winform.cmbSecurity.onListChange = function(){ 
 	var sel = winform.cmbSecurity.selText;
 	winform.outboundConfig.security = sel;
+	if(winform.outboundConfig.protocol == "vless"){
+		if(sel == "reality"){
+			winform.outboundConfig.tls = "reality";
+			winform.outboundConfig.security = "none";
+		}
+		elseif(sel == "tls"){
+			winform.outboundConfig.tls = "tls";
+			winform.outboundConfig.security = "none";
+		}
+		elseif(sel == "none"){
+			winform.outboundConfig.tls = "";
+			winform.outboundConfig.security = "none";
+		}
+	}
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);	
 	winform.updateSharedLink();
 }
@@ -570,7 +584,20 @@ var onEditChange = win.debounce(
 		winform.cmbNetwork.selText = data.network;
 		winform.cmbProtocol.selText = data.protocol;
 		winform.cmbProtocol.onProtocolChange(true);
-		winform.cmbSecurity.selText = data.security;
+		if(data.protocol == "vless"){
+			if(data.tls == "reality" || data.security == "reality" || (#data.publicKey) || (#data.pbk)){
+				winform.cmbSecurity.selText = "reality";
+			}
+			elseif(data.tls == "tls" || data.security == "tls"){
+				winform.cmbSecurity.selText = "tls";
+			}
+			else {
+				winform.cmbSecurity.selText = data.security : "none";
+			}
+		}
+		else {
+			winform.cmbSecurity.selText = data.security;
+		}
 		
 		winform.cmbNetwork.onListChange = cmbNetworkChange;
 		winform.cmbProtocol.onListChange = cmbProtocolChange;
@@ -746,7 +773,7 @@ winform.setOutboundConfig = function(cfg){
 			}
 		}
 	}
-	if(cfg.allowInsecure === null && cfg.protocol != "tuic"){
+	if(cfg.allowInsecure === null && cfg.protocol != "tuic" && cfg.tls != "reality" && cfg.security != "reality" && (!#cfg.publicKey) && (!#cfg.pbk)){
 		cfg.allowInsecure = true;
 	}
     winform.cmbProtocol.selText = cfg.protocol;

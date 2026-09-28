@@ -86,10 +86,17 @@ exportSharedLinks = function(outbounds){
 			
 			var info = {};
 			if(outbound.network!="tcp") info.type = outbound.network ;
-			if(outbound.security && outbound.security!="none" && outbound.security!="auto" && outbound.security!="reality") info.encryption = outbound.security; 
-			if(outbound.tls) info.security = outbound.tls;
+			var isReality = (outbound.tls == "reality") || (outbound.security == "reality") || (#outbound.publicKey) || (#outbound.pbk);
+			if(isReality){
+				info.security = "reality";
+				info.encryption = "none";
+			}
+			else {
+				if(outbound.security && outbound.security!="none" && outbound.security!="auto") info.encryption = outbound.security; 
+				if(outbound.tls) info.security = outbound.tls;
+			}
 			if(outbound.flow) info.flow = outbound.flow;
-			if(outbound.allowInsecure && outbound.tls!="reality") info.allowInsecure = outbound.allowInsecure;
+			if(outbound.allowInsecure && !isReality) info.allowInsecure = outbound.allowInsecure;
 			if(outbound.alpn) info.alpn = outbound.alpn;
 			if(outbound.disableSessionResumption) info.disableSessionResumption = outbound.disableSessionResumption;
 			if(outbound.sni){ info.sni = outbound.sni;}
@@ -425,48 +432,76 @@ importFromString = function(str,subscribeUrl){
 		
 		var vmess2 = ..string.match(line,`vmess\:\/\/[^\@\s]+\@[^\?\#\s\:]+<\:\d+>*\S*`);
 		if( vmess2 ) {
-			var vmessUrl = ..inet.url.split(vmess2) 
-			if(vmessUrl.user && vmessUrl.host && vmessUrl.port){
+			var vmessUrl = ..inet.url.split(vmess2);
+			var host = vmessUrl ? vmessUrl.host : null;
+			var port = vmessUrl ? (tonumber(vmessUrl.port) : 443) : 443;
+			var id = vmessUrl ? vmessUrl.user : null;
+			
+			if(!id || !host){
+				var u,h,p = ..string.match(vmess2,`vmess\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				if(u && h){
+					id = ..inet.url.decode(u);
+					host = h;
+					if(p) port = tonumber(p) : 443;
+				}
+			}
+			
+			if(id && host){
 				var outbound = {
-					address = vmessUrl.host;
-					port = tonumber(vmessUrl.port) : 443; 
-					id = vmessUrl.user;
+					address = host;
+					port = port; 
+					id = id;
 					network = "tcp";
 					protocol = "vmess";
 					tls = "tls";
 					allowInsecure = true;
 				};
 				
-				var extraInfo = (#vmessUrl.extraInfo) ? vmessUrl.extraInfo : ..string.match(vmess2,`\?([^\#]+)`);
-				if(extraInfo){
-					var info = ..inet.url.splitParameters(extraInfo);
-					outbound.sni = info.sni;
-					outbound.host = info.host;
-					outbound.path = info.path;
-					outbound.security = info.encryption;
-					outbound.seed = info.seed; 
-					outbound.key = info.key; 
-					
-					outbound.network = info.type;
-					outbound.type = info.headerType; //kcp || quic
-					
-					if(info.security) outbound.tls = info.security;
-					if(info.flow) outbound.flow = info.flow;
-					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
-					if(allowInsecure!==null) {
-						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+				var queryStr = ..string.match(vmess2,`\?([^\#\s]+)`);
+				if(!queryStr && vmessUrl && #vmessUrl.extraInfo){
+					if(vmessUrl.extraInfo[1] == '?'#){
+						queryStr = ..string.right(vmessUrl.extraInfo, -2);
+						var hashPos = ..string.indexOf(queryStr, "#");
+						if(hashPos) queryStr = ..string.left(queryStr, hashPos - 1);
 					}
-					if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
-					if(info.alpn) outbound.alpn = info.alpn;	 
+				}
+				if(queryStr && #queryStr){
+					var info = ..inet.url.splitParameters(queryStr);
+					if(info){
+						outbound.sni = info.sni;
+						outbound.host = info.host;
+						outbound.path = info.path;
+						outbound.security = info.encryption;
+						outbound.seed = info.seed; 
+						outbound.key = info.key; 
+						
+						outbound.network = info.type;
+						outbound.type = info.headerType; //kcp || quic
+						
+						if(info.security) outbound.tls = info.security;
+						if(info.flow) outbound.flow = info.flow;
+						var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+						if(allowInsecure!==null) {
+							outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+						}
+						if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
+						if(info.alpn) outbound.alpn = info.alpn;	 
+					}
 				}
 				
-				var location = (#vmessUrl.location) ? vmessUrl.location : ..string.match(vmess2,`\#(\S+)`);
+				var location = ..string.match(vmess2,`\#(\S+)`);
+				if(!location && vmessUrl && #vmessUrl.location){
+					location = vmessUrl.location;
+				}
 				if(location){
 					outbound.ps = ..inet.url.decode(location);
 				}
 	
-				outbound.subscribeUrl = subscribeUrl;
-				..table.push(outbounds,outbound);
+				var valid = validOutbound(outbound);
+				if(valid){
+					valid.subscribeUrl = subscribeUrl;
+					..table.push(outbounds,valid);
+				}
 			} 
 			
 			continue;
@@ -500,7 +535,8 @@ importFromString = function(str,subscribeUrl){
 						outbound.ps = h;
 					}	
 				}
-				..table.push(outbounds,outbound);
+				var valid = validOutbound(outbound);
+				if(valid) ..table.push(outbounds,valid);
 			} 
 			
 			continue;
@@ -508,54 +544,94 @@ importFromString = function(str,subscribeUrl){
 		
 		var vless = ..string.match(line,`vless\:\/\/\S+`);
 		if( vless ) {
-			var vlessUrl = ..inet.url.split(vless) 
-			if(vlessUrl.user && vlessUrl.host){
+			var vlessUrl = ..inet.url.split(vless);
+			var host = vlessUrl ? vlessUrl.host : null;
+			var port = vlessUrl ? (tonumber(vlessUrl.port) : 443) : 443;
+			var id = vlessUrl ? vlessUrl.user : null;
+			
+			if(!id || !host){
+				var u,h,p = ..string.match(vless,`vless\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				if(u && h){
+					id = ..inet.url.decode(u);
+					host = h;
+					if(p) port = tonumber(p) : 443;
+				}
+			}
+			
+			if(id && host){
 				var outbound = {
-					address = vlessUrl.host;
-					port = tonumber(vlessUrl.port) : 443; 
-					id = vlessUrl.user;
+					address = host;
+					port = port; 
+					id = id;
 					network = "tcp";
 					protocol = "vless";
 					tls = "tls";
 					allowInsecure = true;
 				};
 				
-				var extraInfo = (#vlessUrl.extraInfo) ? vlessUrl.extraInfo : ..string.match(vless,`\?([^\#]+)`);
-				if(extraInfo){
-					var info = ..inet.url.splitParameters(extraInfo);
-					outbound.sni = info.sni;
-					outbound.host = info.host;
-					outbound.path = info.path;
-					outbound.security = info.encryption;
-					outbound.seed = info.seed; 
-					outbound.key = info.key; 
-					
-					outbound.network = info.type : "tcp";
-					outbound.type = info.headerType; //kcp || quic
-					
-					if(info.security) outbound.tls = info.security;
-					if(info.flow) outbound.flow = info.flow;
-					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
-					if(allowInsecure!==null) {
-						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+				var queryStr = ..string.match(vless,`\?([^\#\s]+)`);
+				if(!queryStr && vlessUrl && #vlessUrl.extraInfo){
+					if(vlessUrl.extraInfo[1] == '?'#){
+						queryStr = ..string.right(vlessUrl.extraInfo, -2);
+						var hashPos = ..string.indexOf(queryStr, "#");
+						if(hashPos) queryStr = ..string.left(queryStr, hashPos - 1);
 					}
-					if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
-					if(info.alpn) outbound.alpn = info.alpn;	 
-					if(info.pbk || info.publicKey) outbound.publicKey = info.pbk : info.publicKey;
-					if(info.sid || info.shortId) outbound.shortId = info.sid : info.shortId;
-					if(info.spx || info.spiderX) outbound.spiderX = info.spx : info.spiderX;
-					if(info.fp || info.fingerprint) outbound.fingerprint = info.fp : info.fingerprint;
-					if(info.serviceName) outbound.serviceName = info.serviceName;
-					if(info.mode) outbound.mode = info.mode;
 				}
 				
-				var location = (#vlessUrl.location) ? vlessUrl.location : ..string.match(vless,`\#(\S+)`);
+				if(queryStr && #queryStr){
+					var info = ..inet.url.splitParameters(queryStr);
+					if(info){
+						outbound.sni = info.sni : info.peer;
+						outbound.host = info.host;
+						outbound.path = info.path;
+						outbound.security = info.encryption;
+						outbound.seed = info.seed; 
+						outbound.key = info.key; 
+						
+						outbound.network = info.type : "tcp";
+						outbound.type = info.headerType; //kcp || quic
+						
+						if(info.security) outbound.tls = info.security;
+						if(info.flow) outbound.flow = info.flow;
+						var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+						if(allowInsecure!==null) {
+							outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+						}
+						if(info.disableSessionResumption) outbound.disableSessionResumption = info.disableSessionResumption;
+						if(info.alpn) outbound.alpn = info.alpn;	 
+						
+						var pk = info.pbk : info.publicKey : info.publickey : info["public-key"] : info.pk;
+						if(pk) outbound.publicKey = pk;
+						
+						var sid = info.sid : info.shortId : info.shortid : info["short-id"];
+						if(sid) outbound.shortId = sid;
+						
+						var spx = info.spx : info.spiderX : info.spiderx : info["spider-x"];
+						if(spx) outbound.spiderX = spx;
+						
+						var fp = info.fp : info.fingerprint : info["client-fingerprint"];
+						if(fp) outbound.fingerprint = fp;
+						
+						if(info.serviceName) outbound.serviceName = info.serviceName;
+						elseif(info["service-name"]) outbound.serviceName = info["service-name"];
+						
+						if(info.mode) outbound.mode = info.mode;
+					}
+				}
+				
+				var location = ..string.match(vless,`\#(\S+)`);
+				if(!location && vlessUrl && #vlessUrl.location){
+					location = vlessUrl.location;
+				}
 				if(location){
 					outbound.ps = ..inet.url.decode(location);
 				}
 	
-				outbound.subscribeUrl = subscribeUrl;
-				..table.push(outbounds,outbound);
+				var valid = validOutbound(outbound);
+				if(valid){
+					valid.subscribeUrl = subscribeUrl;
+					..table.push(outbounds,valid);
+				}
 			} 
 			
 			continue;
@@ -613,45 +689,73 @@ importFromString = function(str,subscribeUrl){
 
 		var trojan = ..string.match(line,`trojan\:\/\/\S+`);
 		if( trojan ) {
-			var trojanUrl = ..inet.url.split(trojan) 
-			if(trojanUrl.user && trojanUrl.host){
+			var trojanUrl = ..inet.url.split(trojan);
+			var host = trojanUrl ? trojanUrl.host : null;
+			var port = trojanUrl ? (tonumber(trojanUrl.port) : 443) : 443;
+			var id = trojanUrl ? trojanUrl.user : null;
+			
+			if(!id || !host){
+				var u,h,p = ..string.match(trojan,`trojan\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				if(u && h){
+					id = ..inet.url.decode(u);
+					host = h;
+					if(p) port = tonumber(p) : 443;
+				}
+			}
+			
+			if(id && host){
 				var outbound = {
-					address = trojanUrl.host;
-					port = tonumber(trojanUrl.port) : 443; 
-					id = trojanUrl.user;
+					address = host;
+					port = port; 
+					id = id;
 					network = "tcp";
 					protocol = "trojan";
 					allowInsecure = true;
 				};
 				
-				var extraInfo = (#trojanUrl.extraInfo) ? trojanUrl.extraInfo : ..string.match(trojan,`\?([^\#]+)`);
-				if(extraInfo){
-					var info = ..inet.url.splitParameters(extraInfo);
-					outbound.sni = info.sni || info.peer;
-					outbound.host = info.host;
-					outbound.path = info.path; 
-					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
-					if(allowInsecure!==null) {
-						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+				var queryStr = ..string.match(trojan,`\?([^\#\s]+)`);
+				if(!queryStr && trojanUrl && #trojanUrl.extraInfo){
+					if(trojanUrl.extraInfo[1] == '?'#){
+						queryStr = ..string.right(trojanUrl.extraInfo, -2);
+						var hashPos = ..string.indexOf(queryStr, "#");
+						if(hashPos) queryStr = ..string.left(queryStr, hashPos - 1);
 					}
-					
-					if(info.type && info.type!=="original"){
-						outbound.network = info.type;
-						if(outbound.network=="h2"){
-							outbound.network="http"
+				}
+				if(queryStr && #queryStr){
+					var info = ..inet.url.splitParameters(queryStr);
+					if(info){
+						outbound.sni = info.sni || info.peer;
+						outbound.host = info.host;
+						outbound.path = info.path; 
+						var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+						if(allowInsecure!==null) {
+							outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
 						}
+						
+						if(info.type && info.type!=="original"){
+							outbound.network = info.type;
+							if(outbound.network=="h2"){
+								outbound.network="http"
+							}
+						}
+						
+						outbound.security = info.encryption; 
 					}
-					
-					outbound.security = info.encryption; 
 				}
 				
-				var location = (#trojanUrl.location) ? trojanUrl.location : ..string.match(trojan,`\#(\S+)`);
+				var location = ..string.match(trojan,`\#(\S+)`);
+				if(!location && trojanUrl && #trojanUrl.location){
+					location = trojanUrl.location;
+				}
 				if(location){
 					outbound.ps = ..inet.url.decode(location);
 				}
 	
-				outbound.subscribeUrl = subscribeUrl;
-				..table.push(outbounds,outbound);
+				var valid = validOutbound(outbound);
+				if(valid){
+					valid.subscribeUrl = subscribeUrl;
+					..table.push(outbounds,valid);
+				}
 			} 
 			
 			continue;
@@ -659,45 +763,73 @@ importFromString = function(str,subscribeUrl){
 
 		var trojan = ..string.match(line,`trojan-go\:\/\/\S+`);
 		if( trojan ) {
-			var trojanUrl = ..inet.url.split(trojan) 
-			if(trojanUrl.user && trojanUrl.host){
+			var trojanUrl = ..inet.url.split(trojan);
+			var host = trojanUrl ? trojanUrl.host : null;
+			var port = trojanUrl ? (tonumber(trojanUrl.port) : 443) : 443;
+			var id = trojanUrl ? trojanUrl.user : null;
+			
+			if(!id || !host){
+				var u,h,p = ..string.match(trojan,`trojan-go\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				if(u && h){
+					id = ..inet.url.decode(u);
+					host = h;
+					if(p) port = tonumber(p) : 443;
+				}
+			}
+			
+			if(id && host){
 				var outbound = {
-					address = trojanUrl.host;
-					port = tonumber(trojanUrl.port) : 443; 
-					id = trojanUrl.user;
+					address = host;
+					port = port; 
+					id = id;
 					network = "tcp";
 					protocol = "trojan-go";
 					allowInsecure = true;
 				};
 				
-				var extraInfo = (#trojanUrl.extraInfo) ? trojanUrl.extraInfo : ..string.match(trojan,`\?([^\#]+)`);
-				if(extraInfo){
-					var info = ..inet.url.splitParameters(extraInfo);
-					outbound.sni = info.sni || info.peer;
-					outbound.host = info.host;
-					outbound.path = info.path; 
-					var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
-					if(allowInsecure!==null) {
-						outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
+				var queryStr = ..string.match(trojan,`\?([^\#\s]+)`);
+				if(!queryStr && trojanUrl && #trojanUrl.extraInfo){
+					if(trojanUrl.extraInfo[1] == '?'#){
+						queryStr = ..string.right(trojanUrl.extraInfo, -2);
+						var hashPos = ..string.indexOf(queryStr, "#");
+						if(hashPos) queryStr = ..string.left(queryStr, hashPos - 1);
 					}
-					
-					if(info.type && info.type!=="original"){
-						outbound.network = info.type;
-						if(outbound.network=="h2"){
-							outbound.network="http"
+				}
+				if(queryStr && #queryStr){
+					var info = ..inet.url.splitParameters(queryStr);
+					if(info){
+						outbound.sni = info.sni || info.peer;
+						outbound.host = info.host;
+						outbound.path = info.path; 
+						var allowInsecure = info.allowInsecure : info.insecure : info.allow_insecure : info["skip-cert-verify"] : info["tls-insecure"];
+						if(allowInsecure!==null) {
+							outbound.allowInsecure = (allowInsecure!=="0" && allowInsecure!=="false" && allowInsecure!==false) 
 						}
+						
+						if(info.type && info.type!=="original"){
+							outbound.network = info.type;
+							if(outbound.network=="h2"){
+								outbound.network="http"
+							}
+						}
+						
+						outbound.security = info.encryption; 
 					}
-					
-					outbound.security = info.encryption; 
 				}
 				
-				var location = (#trojanUrl.location) ? trojanUrl.location : ..string.match(trojan,`\#(\S+)`);
+				var location = ..string.match(trojan,`\#(\S+)`);
+				if(!location && trojanUrl && #trojanUrl.location){
+					location = trojanUrl.location;
+				}
 				if(location){
 					outbound.ps = ..inet.url.decode(location);
 				}
 	
-				outbound.subscribeUrl = subscribeUrl;
-				..table.push(outbounds,outbound);
+				var valid = validOutbound(outbound);
+				if(valid){
+					valid.subscribeUrl = subscribeUrl;
+					..table.push(outbounds,outbound);
+				}
 			} 
 			
 			continue;
@@ -844,70 +976,105 @@ importFromString = function(str,subscribeUrl){
 		var tuic = ..string.match(line,`(tuic\:\/\/\S+)`);
 		if( tuic ) {
 			var tuicUrl = ..inet.url.split(tuic);
-			if( tuicUrl.host ){
+			var host = tuicUrl ? tuicUrl.host : null;
+			var port = tuicUrl ? (tonumber(tuicUrl.port) : 8443) : 8443;
+			var u = tuicUrl ? tuicUrl.user : null;
+			var p = tuicUrl ? tuicUrl.password : null;
+			
+			if(!host){
+				var userinfo,h,prt = ..string.match(tuic,`tuic\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				if(h){
+					host = h;
+					if(prt) port = tonumber(prt) : 8443;
+					if(userinfo){
+						u,p = ..string.match(userinfo,"([^\:]+)\:([^\:]+)");
+						if(!u) u = userinfo;
+					}
+				}
+			}
+			
+			if( host ){
 				var outbound = {
-					address = tuicUrl.host;
-					port = tonumber(tuicUrl.port) : 8443; 
+					address = host;
+					port = port; 
 					protocol = "tuic";
 					network = "quic";
 				};
 				
-				if(tuicUrl.user && tuicUrl.password){
-					outbound.id = tuicUrl.user + ":" + tuicUrl.password;
-					outbound.uuid = tuicUrl.user;
-					outbound.password = tuicUrl.password;
+				if(u && p){
+					outbound.id = u + ":" + p;
+					outbound.uuid = u;
+					outbound.password = p;
 				}
-				elseif(tuicUrl.user){
-					var u,p = ..string.match(tuicUrl.user,"([^\:]+)\:([^\:]+)");
-					if(u && p){
-						outbound.id = u + ":" + p;
-						outbound.uuid = u;
-						outbound.password = p;
+				elseif(u){
+					var uuid,pwd = ..string.match(u,"([^\:]+)\:([^\:]+)");
+					if(uuid && pwd){
+						outbound.id = uuid + ":" + pwd;
+						outbound.uuid = uuid;
+						outbound.password = pwd;
 					}
 					else {
-						outbound.id = tuicUrl.user;
-						outbound.uuid = tuicUrl.user;
+						outbound.id = u;
+						outbound.uuid = u;
 					}
 				}
 				
-				if(tuicUrl.extraInfo){
-					var info = ..inet.url.splitParameters(tuicUrl.extraInfo);
-					if(info.sni) outbound.sni = info.sni;
-					if(info.alpn) outbound.alpn = info.alpn;
-					if(info.congestion_control) outbound.congestion_control = info.congestion_control;
-					elseif(info.congestion_controller) outbound.congestion_control = info.congestion_controller;
-					elseif(info.congestion) outbound.congestion_control = info.congestion;
-					
-					if(info.udp_relay_mode) outbound.udp_relay_mode = info.udp_relay_mode;
-					elseif(info.udp_mode) outbound.udp_relay_mode = info.udp_mode;
-					
-					if(info.password && !outbound.password) {
-						outbound.password = info.password;
-						if(outbound.uuid) outbound.id = outbound.uuid + ":" + info.password;
+				var queryStr = ..string.match(tuic,`\?([^\#\s]+)`);
+				if(!queryStr && tuicUrl && #tuicUrl.extraInfo){
+					if(tuicUrl.extraInfo[1] == '?'#){
+						queryStr = ..string.right(tuicUrl.extraInfo, -2);
+						var hashPos = ..string.indexOf(queryStr, "#");
+						if(hashPos) queryStr = ..string.left(queryStr, hashPos - 1);
 					}
-					if(info.token && !outbound.id) outbound.id = info.token;
-					if(info.allow_insecure!==null){
-						outbound.allowInsecure = (info.allow_insecure!=="0" && info.allow_insecure!=="false");
-					}
-					elseif(info.allowInsecure!==null){
-						outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false");
-					}
-					elseif(info.skip_cert_verify!==null){
-						outbound.allowInsecure = (info.skip_cert_verify!=="0" && info.skip_cert_verify!=="false");
-					}
-					if(info.disable_sni!==null){
-						outbound.disable_sni = (info.disable_sni!=="0" && info.disable_sni!=="false");
-					}
-					if(info.zero_rtt_handshake!==null){
-						outbound.zero_rtt_handshake = (info.zero_rtt_handshake!=="0" && info.zero_rtt_handshake!=="false");
+				}
+				if(queryStr && #queryStr){
+					var info = ..inet.url.splitParameters(queryStr);
+					if(info){
+						if(info.sni) outbound.sni = info.sni;
+						if(info.alpn) outbound.alpn = info.alpn;
+						if(info.congestion_control) outbound.congestion_control = info.congestion_control;
+						elseif(info.congestion_controller) outbound.congestion_control = info.congestion_controller;
+						elseif(info.congestion) outbound.congestion_control = info.congestion;
+						
+						if(info.udp_relay_mode) outbound.udp_relay_mode = info.udp_relay_mode;
+						elseif(info.udp_mode) outbound.udp_relay_mode = info.udp_mode;
+						
+						if(info.password && !outbound.password) {
+							outbound.password = info.password;
+							if(outbound.uuid) outbound.id = outbound.uuid + ":" + info.password;
+						}
+						if(info.token && !outbound.id) outbound.id = info.token;
+						if(info.allow_insecure!==null){
+							outbound.allowInsecure = (info.allow_insecure!=="0" && info.allow_insecure!=="false");
+						}
+						elseif(info.allowInsecure!==null){
+							outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false");
+						}
+						elseif(info.skip_cert_verify!==null){
+							outbound.allowInsecure = (info.skip_cert_verify!=="0" && info.skip_cert_verify!=="false");
+						}
+						if(info.disable_sni!==null){
+							outbound.disable_sni = (info.disable_sni!=="0" && info.disable_sni!=="false");
+						}
+						if(info.zero_rtt_handshake!==null){
+							outbound.zero_rtt_handshake = (info.zero_rtt_handshake!=="0" && info.zero_rtt_handshake!=="false");
+						}
 					}
 				} 
-				if(tuicUrl.location){
-					outbound.ps = ..inet.url.decode(tuicUrl.location);
+				
+				var location = ..string.match(tuic,`\#(\S+)`);
+				if(!location && tuicUrl && #tuicUrl.location){
+					location = tuicUrl.location;
+				}
+				if(location){
+					outbound.ps = ..inet.url.decode(location);
 				}
 	
-				outbound.subscribeUrl = subscribeUrl;
-				..table.push(outbounds,outbound);
+				var valid = validOutbound(outbound);
+				if(valid){
+					valid.subscribeUrl = subscribeUrl;
+					..table.push(outbounds,valid);
+				}
 			} 
 			
 			continue;
@@ -960,7 +1127,7 @@ importFromString = function(str,subscribeUrl){
 		}
 	}
 	
-	return outbounds;
+	return validAll(outbounds);
 }
 
 importFromClipboard  = function(){ 
@@ -1156,14 +1323,29 @@ validOutbound = function(outbound){
 	if(outbound.fp && !outbound.fingerprint){
 		outbound.fingerprint = outbound.fp;
 	}
+	if(outbound.publickey && !outbound.publicKey){
+		outbound.publicKey = outbound.publickey;
+		outbound.publickey = null;
+	}
 	if(outbound.pbk && !outbound.publicKey){
 		outbound.publicKey = outbound.pbk;
+		outbound.pbk = null;
+	}
+	if(outbound.shortid && !outbound.shortId){
+		outbound.shortId = outbound.shortid;
+		outbound.shortid = null;
 	}
 	if(outbound.sid && !outbound.shortId){
 		outbound.shortId = outbound.sid;
+		outbound.sid = null;
+	}
+	if(outbound.spiderx && !outbound.spiderX){
+		outbound.spiderX = outbound.spiderx;
+		outbound.spiderx = null;
 	}
 	if(outbound.spx && !outbound.spiderX){
 		outbound.spiderX = outbound.spx;
+		outbound.spx = null;
 	}
 	
 	var realityOpts = outbound["reality-opts"];
@@ -1175,14 +1357,25 @@ validOutbound = function(outbound){
 		outbound["reality-opts"] = null;
 	}
 
+	var isReality = (outbound.tls == "reality") || (outbound.security == "reality") || (#outbound.publicKey);
+	if(isReality){
+		outbound.tls = "reality";
+		outbound.allowInsecure = null;
+		if(outbound.security == "reality") outbound.security = "none";
+	}
+
 	if(outbound.publicKey){
 		outbound.publicKey = ..string.trim(outbound.publicKey, '"\'\s\r\n ');
+		var hashPos = ..string.indexOf(outbound.publicKey, "#");
+		if(hashPos) outbound.publicKey = ..string.left(outbound.publicKey, hashPos - 1);
 		outbound.publicKey = ..string.replace(outbound.publicKey, "@+", "-");
 		outbound.publicKey = ..string.replace(outbound.publicKey, "@/", "_");
 		outbound.publicKey = ..string.replace(outbound.publicKey, "@=", "");
 	}
 	if(outbound.shortId){
 		outbound.shortId = ..string.trim(outbound.shortId, '"\'\s\r\n ');
+		var hashPos = ..string.indexOf(outbound.shortId, "#");
+		if(hashPos) outbound.shortId = ..string.left(outbound.shortId, hashPos - 1);
 	}
 	
 	var grpcOpts = outbound["grpc-opts"];
