@@ -173,6 +173,7 @@ winform.btnUpdate.oncommand = function(id,event){
 		} 
 		
 		config.core.default = cfg;
+		config.core.customText = winform.editCoreConfig.text;
 		config.core.save();
 		
 		publish("uiCommand.restartV2RayCore",cfg);   
@@ -628,14 +629,43 @@ winform.editCoreConfig.enablePopMenu({
 	};  
 	{ "恢复到当前正在使用的内核配置";
 		function(id){   
-			winform.editCoreConfig.text = web.json.stringify( 
-				config.core.default,true
-			)
+			winform.editCoreConfig.text = config.core.customText 
+				|| string.crlf( string.load("\forms\main\config\coreConfigs\default.json") )
+				|| web.json.stringify( config.core.default,true );
 
 			winform.editCoreConfig.msgOk('已恢复到当前正在使用的内核配置',1300)
 		} 
 	}; 
 } )
+
+var updateInboundsText = function(txt){
+	if(!#txt) return txt;
+	var inbounds = config.core.default[["inbounds"]];
+	if(!inbounds) return txt;
+	
+	var socksPort, httpPort, listen;
+	for(k,ib in inbounds){
+		if(ib.tag == "proxy"){
+			socksPort = ib.port;
+			listen = ib.listen;
+		}
+		elseif(ib.tag == "http_proxy"){
+			httpPort = ib.port;
+		}
+	}
+	
+	if(socksPort !== null){
+		txt = string.replace(txt,`("port"\s*:\s*)\d+(\s*,[^\}]+?"tag"\s*:\s*"proxy")`, `\1` + socksPort + `\2`);
+	}
+	if(httpPort !== null){
+		txt = string.replace(txt,`("port"\s*:\s*)\d+(\s*,[^\}]+?"tag"\s*:\s*"http_proxy")`, `\1` + httpPort + `\2`);
+	}
+	if(listen){
+		txt = string.replace(txt,`("listen"\s*:\s*")[^"]+("[\s\S]*?"tag"\s*:\s*"proxy")`, `\1` + listen + `\2`);
+		txt = string.replace(txt,`("listen"\s*:\s*")[^"]+("[\s\S]*?"tag"\s*:\s*"http_proxy")`, `\1` + listen + `\2`);
+	}
+	return txt;
+}
 
 subscribe("outbounds.updateConfigJson",function(){
 	if(winform.editOutbounds.modified){
@@ -665,15 +695,21 @@ subscribe("config.inbounds.changed",function(){
 		return;
 	}
 	
-	winform.editCoreConfig.text = web.json.stringify( 
-		config.core.default,true
-	)
+	if(config.core.customText){
+		config.core.customText = updateInboundsText(config.core.customText);
+		config.core.save();
+		winform.editCoreConfig.text = config.core.customText;
+	}
+	else {
+		winform.editCoreConfig.text = string.crlf( string.load("\forms\main\config\coreConfigs\default.json") )
+			|| web.json.stringify( config.core.default,true );
+	}
 	
 	winform.editCoreConfig.modified = false;
 } )
-winform.editCoreConfig.text = web.json.stringify( 
-	config.core.default,true
-)
+winform.editCoreConfig.text = config.core.customText 
+	|| string.crlf( string.load("\forms\main\config\coreConfigs\default.json") )
+	|| web.json.stringify( config.core.default,true );
 
 var editOutboundsTip = {
 	address = {"代理服务器地址";"值可以是域名或者IP地址"};

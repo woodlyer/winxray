@@ -13,7 +13,8 @@
                     "http",
                     "tls"
                 ],
-                "enabled": true
+                "enabled": true,
+                "routeOnly": true
             },
             "tag": "proxy" // 名称为"proxy"的节点由 winXray 自动维护并添加用户配置
         },
@@ -27,7 +28,8 @@
                     "http",
                     "tls"
                 ],
-                "enabled": true
+                "enabled": true,
+                "routeOnly": true
             },
             "tag": "http_proxy" // 名称为"http_proxy"的入站节点由 winXray 自动维护并添加用户配置
         }

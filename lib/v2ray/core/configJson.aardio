@@ -35,6 +35,9 @@ write  = function(jsonPath,outbound,sockPort,httpPort){
 	
 	var socksInbounds,httpInbounds;
 	for(k,ib in currentCore.inbounds){
+		if(ib.sniffing && (ib.sniffing.routeOnly === null)){
+			ib.sniffing.routeOnly = true;
+		}
 		if(ib.tag == "proxy"){
 			socksInbounds = ib;
 			socksInbounds.port = sockPort; 

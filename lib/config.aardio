@@ -58,6 +58,7 @@ if(!config.proxy.hotkey){
 }
 
 config.__resetDefaultCore = function(){
+	config.core.customText = null;
 	config.core.default =  {
 		inbounds={
 			{
@@ -73,7 +74,8 @@ config.__resetDefaultCore = function(){
 						"http";
 						"tls"
 					};
-					enabled=true
+					enabled=true;
+					routeOnly=true;
 				};
 				tag="proxy";
 			}; 
@@ -87,7 +89,8 @@ config.__resetDefaultCore = function(){
 						"http";
 						"tls"
 					};
-					enabled=true
+					enabled=true;
+					routeOnly=true;
 				};
 				tag="http_proxy"
 			}
@@ -161,9 +164,18 @@ if(!config.core.default.inbounds[2]){
 				"http";
 				"tls"
 			};
-			enabled=true
+			enabled=true;
+			routeOnly=true;
 		};
 		tag="http_proxy"
+	}
+}
+
+if(config.core.default.inbounds){
+	for(i,ib in config.core.default.inbounds){
+		if(ib.sniffing && (ib.sniffing.routeOnly === null)){
+			ib.sniffing.routeOnly = true;
+		}
 	}
 }
 

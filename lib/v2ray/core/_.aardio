@@ -79,7 +79,7 @@ restart = function(editor,outbound){
 
 	socksProxyPort = inbounds[1].port;  
 	httpProxPort = inbounds[2].port;
-	if( (! socksProxyPort) || socksProxyPort >=  49152 ){ socksProxyPort = ..wsock.tcp.server.getFreePort("127.0.0.1",1081,10801,10811,44821)  }
+	if( (! socksProxyPort) || socksProxyPort >=  49152 ){ socksProxyPort = ..wsock.tcp.server.getFreePort("127.0.0.1",1080,10801,10811,44821)  }
 	if( (! httpProxPort) || httpProxPort >=  49152 ){ httpProxPort = ..wsock.tcp.server.getFreePort("127.0.0.1",1082,10802,10812,44822) }
 	
 	if(prcsV2Ray){

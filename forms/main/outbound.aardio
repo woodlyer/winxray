@@ -536,7 +536,7 @@ var onEditChange = win.debounce(
 		winform.editAddress.editBox.onChange = null;
 		winform.editPs.editBox.onChange = null;
 		
-		winform.editPort.text = data.port;
+		winform.editPort.text = tostring(data.port : "");
 		var u = data.uuid : data.user;
 		var pwd = data.password : data.passwd;
 		if(!u && data.id){

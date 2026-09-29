@@ -102,7 +102,7 @@ var onInboundsUpdated = function(){
 		} 
 	}
 		
-	winform.editSocksPort.text = v2ray.core.socksProxyPort || socksInbounds[["port"]] || 1081;
+	winform.editSocksPort.text = v2ray.core.socksProxyPort || socksInbounds[["port"]] || 1080;
 	winform.editHttpPort.text = v2ray.core.httpProxyPort || httpInbounds[["port"]] || 1082;
 	winform.chkLan.checked = socksInbounds[["listen"]] !== "127.0.0.1";
 	winform.btnOpenFirewall.disabled = !winform.chkLan.checked;
