@@ -1,0 +1,122 @@
+//hysteriaJson 内核配置（Hysteria 2）
+import web.json;   
+
+namespace v2ray.core.hysteriaJson;
+ 
+write = function(jsonPath,outbound,hysteriaSocksPort){
+    if(!outbound){ return; }
+	if(type(outbound.port) != type.number && outbound.port){
+		outbound.port = tonumber(outbound.port) : outbound.port;
+	}
+
+	var auth = outbound.auth : outbound.password : outbound.passwd;
+	if(outbound.user && outbound.password){
+		auth = outbound.user + ":" + outbound.password;
+	}
+	elseif(!auth && outbound.id){
+		auth = outbound.id;
+	}
+
+	var portStr = tostring(outbound.ports : outbound.port_hopping : outbound.mport : outbound.port : 443);
+	var serverAddr = outbound.address;
+	if(!..string.find(serverAddr, `\:\d+$`) && !..string.find(serverAddr, `\:\d+\-\d+`)){
+		serverAddr = serverAddr + ":" + portStr;
+	}
+
+	var sniHost = outbound.sni;
+	if(!#sniHost){
+		sniHost = outbound.address;
+	}
+
+	var insecure = false;
+	if(outbound.insecure !== null){
+		insecure = (outbound.insecure == true || outbound.insecure == "1" || outbound.insecure == "true");
+	}
+	elseif(outbound.allow_insecure !== null){
+		insecure = (outbound.allow_insecure == true || outbound.allow_insecure == "1" || outbound.allow_insecure == "true");
+	}
+	elseif(outbound.allowInsecure !== null){
+		insecure = (outbound.allowInsecure == true || outbound.allowInsecure == "1" || outbound.allowInsecure == "true");
+	}
+	elseif(outbound.skip_cert_verify !== null){
+		insecure = (outbound.skip_cert_verify == true || outbound.skip_cert_verify == "1" || outbound.skip_cert_verify == "true");
+	}
+	elseif(outbound.skipCertVerify !== null){
+		insecure = (outbound.skipCertVerify == true || outbound.skipCertVerify == "1" || outbound.skipCertVerify == "true");
+	}
+
+	var tls = {
+		sni = sniHost;
+		insecure = insecure;
+	};
+
+	var pin = outbound.pinSHA256 : outbound["pin-sha256"] : outbound.pin_sha256;
+	if(#pin){
+		tls.pinSHA256 = pin;
+	}
+
+	if(outbound.alpn){
+		if(type(outbound.alpn) == type.table){
+			tls.alpn = outbound.alpn;
+		}
+		elseif(type(outbound.alpn) == type.string && #outbound.alpn){
+			tls.alpn = ..string.split(outbound.alpn,",");
+		}
+	}
+
+	var current = {
+		server = serverAddr;
+		auth = auth : "";
+		tls = tls;
+		socks5 = {
+			listen = "127.0.0.1:" + hysteriaSocksPort;
+		};
+	};
+
+	var obfsType = outbound.obfs : outbound.obfs_type : outbound["obfs-type"];
+	var obfsPassword = outbound.obfs_password : outbound["obfs-password"] : outbound.obfsParam;
+	if(obfsType && #obfsType){
+		if(obfsType == "salamander"){
+			current.obfs = {
+				type = "salamander";
+				salamander = {
+					password = obfsPassword : "";
+				};
+			};
+		}
+		elseif(obfsType == "gecko"){
+			current.obfs = {
+				type = "gecko";
+				gecko = {
+					password = obfsPassword : "";
+				};
+			};
+		}
+		else {
+			current.obfs = {
+				type = obfsType;
+			};
+		}
+	}
+
+	var up = outbound.up : outbound.upload_mbps : outbound.bandwidth_up;
+	var down = outbound.down : outbound.download_mbps : outbound.bandwidth_down;
+	if(up || down){
+		var bw = {};
+		if(up) bw.up = (type(up) == type.number) ? (tostring(up) + " mbps") : up;
+		if(down) bw.down = (type(down) == type.number) ? (tostring(down) + " mbps") : down;
+		current.bandwidth = bw;
+	}
+
+	if(outbound.fastOpen !== null || outbound.fast_open !== null){
+		var fo = (outbound.fastOpen !== null) ? outbound.fastOpen : outbound.fast_open;
+		current.fastOpen = (fo == true || fo == "1" || fo == "true");
+	}
+
+	if(outbound.lazy !== null){
+		current.lazy = (outbound.lazy == true || outbound.lazy == "1" || outbound.lazy == "true");
+	}
+
+	..string.save(jsonPath,..web.json.stringify(current,true,false) );
+	return jsonPath;
+}

@@ -2,6 +2,7 @@
 import v2ray.core.ssr;
 import v2ray.core.naive;
 import v2ray.core.tuic;
+import v2ray.core.hysteria;
 import wsock.tcp.server;
 import process.popen;
 import config;
@@ -70,6 +71,12 @@ restart = function(editor,outbound){
 			return false,"启动失败,未找到 TUIC Core";
 		}
 	}
+	if( outbound.protocol == "hysteria2" || outbound.protocol == "hy2" || outbound.protocol == "hysteria" ){ 
+		if(!..v2ray.core.hysteria.getPath(editor.hwnd)){
+			v2RayStarting = false;
+			return false,"启动失败,未找到 Hysteria Core";
+		}
+	}
 	
 	..publish("activeOutbound",false);
 	
@@ -90,6 +97,7 @@ restart = function(editor,outbound){
 	..v2ray.core.ssr.stop();
 	..v2ray.core.naive.stop();
 	..v2ray.core.tuic.stop();
+	..v2ray.core.hysteria.stop();
 	
 	var nexCore;
 	if( outbound.protocol == "ssr" ){  
@@ -136,6 +144,21 @@ restart = function(editor,outbound){
 		} 
 		
 		nexCore = ..v2ray.core.tuic;
+	}
+	elseif( outbound.protocol == "hysteria2" || outbound.protocol == "hy2" || outbound.protocol == "hysteria" ){  
+		var nextProxyPort = ..wsock.getFreePort();
+		if(!..v2ray.core.hysteria.restart(editor,outbound,nextProxyPort)){
+			v2RayStarting = false;
+			return false,"Hysteria Core 启动失败";
+		}
+
+		outbound = {
+			protocol = "socks";
+			address = "127.0.0.1";
+			port = nextProxyPort;
+		} 
+		
+		nexCore = ..v2ray.core.hysteria;
 	}
 
 	if( ! prcsV2Ray ){ 
@@ -199,6 +222,7 @@ stop = function(){
 	..v2ray.core.ssr.stop();
 	..v2ray.core.naive.stop();
 	..v2ray.core.tuic.stop();
+	..v2ray.core.hysteria.stop();
 	
 	if(prcsV2Ray){
 		prcsV2Ray.terminate();
@@ -214,6 +238,8 @@ stop = function(){
 	process.file.terminate("v2ray.exe"); 
 	process.file.terminate("v2ctl.exe"); 
 	process.file.terminate("tuic-client.exe");
+	process.file.terminate("hysteria.exe");
+	process.file.terminate("hysteria-client.exe");
 	process.file.terminate("naive.exe");
 	process.file.terminate("ssr-client.exe");
 	
@@ -227,6 +253,7 @@ stop = function(){
 
 isRunning = function(){
 	if(prcsV2Ray) return true;
+	if(..v2ray.core.hysteria && ..v2ray.core.hysteria.isRunning && ..v2ray.core.hysteria.isRunning()) return true;
 	if(..v2ray.core.tuic && ..v2ray.core.tuic.isRunning && ..v2ray.core.tuic.isRunning()) return true;
 	if(..v2ray.core.naive && ..v2ray.core.naive.isRunning && ..v2ray.core.naive.isRunning()) return true;
 	if(..v2ray.core.ssr && ..v2ray.core.ssr.isRunning && ..v2ray.core.ssr.isRunning()) return true;

@@ -205,6 +205,64 @@ exportSharedLinks = function(outbounds){
 			} 
 			..table.push(outString,tuic);
 		} 
+		elseif(outbound.protocol == "hysteria2" || outbound.protocol == "hy2" || outbound.protocol == "hysteria"){
+			var hy2;
+			var auth = outbound.auth : outbound.password : outbound.passwd;
+			if(outbound.user && outbound.password){
+				auth = outbound.user + ":" + outbound.password;
+			}
+			elseif(!auth && outbound.id){
+				auth = outbound.id;
+			}
+			
+			var portStr = tostring(outbound.ports : outbound.port_hopping : outbound.mport : outbound.port : 443);
+			if(auth && #auth){
+				hy2 = "hysteria2://" + ..inet.url.encode(auth) + "@" + outbound.address + ":" + portStr;
+			}
+			else {
+				hy2 = "hysteria2://" + outbound.address + ":" + portStr;
+			}
+			
+			var info = {};
+			if(outbound.sni && outbound.sni != outbound.address) info.sni = outbound.sni;
+			if(outbound.insecure || outbound.allowInsecure || outbound.skip_cert_verify || outbound.skipCertVerify || outbound.allow_insecure) info.insecure = "1";
+			var pin = outbound.pinSHA256 : outbound["pin-sha256"] : outbound.pin_sha256;
+			if(#pin) info.pinSHA256 = pin;
+			var obfsType = outbound.obfs : outbound.obfs_type : outbound["obfs-type"];
+			if(#obfsType) info.obfs = obfsType;
+			var obfsPwd = outbound.obfs_password : outbound["obfs-password"] : outbound.obfsParam;
+			if(#obfsPwd) info["obfs-password"] = obfsPwd;
+			if(outbound.alpn) info.alpn = (type(outbound.alpn)==type.table) ? ..string.join(outbound.alpn,",") : outbound.alpn;
+			if(outbound.up : outbound.upload_mbps : outbound.bandwidth_up) info.up = tostring(outbound.up : outbound.upload_mbps : outbound.bandwidth_up);
+			if(outbound.down : outbound.download_mbps : outbound.bandwidth_down) info.down = tostring(outbound.down : outbound.download_mbps : outbound.bandwidth_down);
+			if(outbound.fastOpen || outbound.fast_open) info["fastopen"] = "1";
+			if(outbound.lazy) info.lazy = "1";
+			
+			var excludeFields = {
+				address=1;port=1;ports=1;id=1;protocol=1;network=1;tls=1;security=1;ps=1;
+				subscribeUrl=1;concurrency=1;autoConnect=1;sshPort=1;
+				user=1;uuid=1;auth=1;password=1;passwd=1;sni=1;alpn=1;
+				insecure=1;allowInsecure=1;skip_cert_verify=1;skipCertVerify=1;allow_insecure=1;
+				pinSHA256=1;["pin-sha256"]=1;pin_sha256=1;
+				obfs=1;obfs_type=1;["obfs-type"]=1;
+				obfs_password=1;["obfs-password"]=1;obfsParam=1;
+				up=1;down=1;upload_mbps=1;download_mbps=1;bandwidth_up=1;bandwidth_down=1;
+				fastOpen=1;fast_open=1;lazy=1;port_hopping=1;mport=1;
+			};
+			for(k,v in outbound){
+				if(!excludeFields[k] && info[k]===null && (type(v)=="string" || type(v)=="number") && #tostring(v)){
+					info[k] = tostring(v);
+				}
+			}
+			
+			if(..table.count(info)){
+				hy2 = ..inet.url.appendExtraInfo(hy2,info);
+			}
+			if(outbound.ps){
+				hy2 = hy2 + "#" + ..inet.url.encode(outbound.ps);
+			} 
+			..table.push(outString,hy2);
+		} 
 		elseif(outbound.protocol == "naive"){
 			var urlInfo = {
 				host = outbound.address;
@@ -448,7 +506,7 @@ importFromString = function(str,subscribeUrl){
 		_subscriptionResponseCache[subscribeUrl] = crc32;
 	}
 
-	if(!..string.find(str,"<vmess>|<vless>|<trojan>|<trojan-go>|<tuic>|<naive>|<ss>|<ssr>|<http>|<https>|%\{\}|%\[\]")){
+	if(!..string.find(str,"<vmess>|<vless>|<trojan>|<trojan-go>|<tuic>|<hysteria2>|<hy2>|<hysteria>|<naive>|<ss>|<ssr>|<http>|<https>|%\{\}|%\[\]")){
 		var cleanStr = ..string.replace(str,"\s+","");
 		if(..string.match(cleanStr,"^[\w=+/-_]+$")){
 			var decoded = ..crypt.decodeBin(cleanStr);
@@ -1159,6 +1217,144 @@ importFromString = function(str,subscribeUrl){
 			
 			continue;
 		}
+
+		var hy2 = ..string.match(line,`((?:hysteria2|hy2)\:\/\/\S+)`);
+		if( hy2 ) {
+			var hy2Url = ..inet.url.split(hy2);
+			var host = hy2Url ? hy2Url.host : null;
+			var port = hy2Url ? (tonumber(hy2Url.port) : 443) : 443;
+			var u = hy2Url ? hy2Url.user : null;
+			var p = hy2Url ? hy2Url.password : null;
+			
+			if(!host){
+				var userinfo,h,prt = ..string.match(hy2,`(?:hysteria2|hy2)\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				if(h){
+					host = h;
+					if(prt) port = tonumber(prt) : 443;
+					if(userinfo){
+						u,p = ..string.match(userinfo,"([^\:]+)\:([^\:]+)");
+						if(!u) u = userinfo;
+					}
+				}
+				else {
+					var h2,prt2 = ..string.match(hy2,`(?:hysteria2|hy2)\:\/\/([^\:\?\#\/]+)<:(\d+)>*`);
+					if(h2){
+						host = h2;
+						if(prt2) port = tonumber(prt2) : 443;
+					}
+				}
+			}
+			
+			if( host ){
+				var outbound = {
+					address = host;
+					port = port; 
+					protocol = "hysteria2";
+					network = "quic";
+				};
+				
+				if(u && p){
+					outbound.id = u + ":" + p;
+					outbound.user = u;
+					outbound.password = p;
+				}
+				elseif(u){
+					var user,pwd = ..string.match(u,"([^\:]+)\:([^\:]+)");
+					if(user && pwd){
+						outbound.id = user + ":" + pwd;
+						outbound.user = user;
+						outbound.password = pwd;
+					}
+					else {
+						outbound.id = u;
+						outbound.password = u;
+					}
+				}
+				
+				var queryStr = ..string.match(hy2,`\?([^\#\s]+)`);
+				if(!queryStr && hy2Url && #hy2Url.extraInfo){
+					if(hy2Url.extraInfo[1] == '?'#){
+						queryStr = ..string.right(hy2Url.extraInfo, -2);
+						var hashPos = ..string.indexOf(queryStr, "#");
+						if(hashPos) queryStr = ..string.left(queryStr, hashPos - 1);
+					}
+				}
+				if(queryStr && #queryStr){
+					var info = ..inet.url.splitParameters(queryStr);
+					if(info){
+						if(info.sni) outbound.sni = info.sni;
+						if(info.alpn) outbound.alpn = info.alpn;
+						
+						var obfsType = info.obfs : info["obfs-type"] : info.obfs_type;
+						if(obfsType) outbound.obfs = obfsType;
+						var obfsPwd = info["obfs-password"] : info.obfs_password : info.obfsParam;
+						if(obfsPwd) outbound.obfs_password = obfsPwd;
+						
+						var pin = info.pinSHA256 : info["pin-sha256"] : info.pin_sha256;
+						if(pin) outbound.pinSHA256 = pin;
+						
+						if(info.up) outbound.up = info.up;
+						if(info.down) outbound.down = info.down;
+						if(info.mport) outbound.ports = info.mport;
+						if(info.ports) outbound.ports = info.ports;
+						
+						if(info.password && !outbound.password) {
+							outbound.password = info.password;
+							outbound.id = info.password;
+						}
+						if(info.auth && !outbound.password) {
+							outbound.password = info.auth;
+							outbound.id = info.auth;
+						}
+						
+						if(info.insecure!==null){
+							outbound.allowInsecure = (info.insecure!=="0" && info.insecure!=="false");
+						}
+						elseif(info.allow_insecure!==null){
+							outbound.allowInsecure = (info.allow_insecure!=="0" && info.allow_insecure!=="false");
+						}
+						elseif(info.allowInsecure!==null){
+							outbound.allowInsecure = (info.allowInsecure!=="0" && info.allowInsecure!=="false");
+						}
+						elseif(info.skip_cert_verify!==null){
+							outbound.allowInsecure = (info.skip_cert_verify!=="0" && info.skip_cert_verify!=="false");
+						}
+						
+						if(info.fastopen!==null){
+							outbound.fastOpen = (info.fastopen!=="0" && info.fastopen!=="false");
+						}
+						elseif(info.fastOpen!==null){
+							outbound.fastOpen = (info.fastOpen!=="0" && info.fastOpen!=="false");
+						}
+						if(info.lazy!==null){
+							outbound.lazy = (info.lazy!=="0" && info.lazy!=="false");
+						}
+
+						for(k,v in info){
+							if(outbound[k] === null && (type(v)=="string" || type(v)=="number")){
+								outbound[k] = v;
+							}
+						}
+					}
+				} 
+				
+				var location = ..string.match(hy2,`\#(\S+)`);
+				if(!location && hy2Url && #hy2Url.location){
+					location = hy2Url.location;
+				}
+				if(location){
+					outbound.ps = ..inet.url.decode(location);
+				}
+	
+				var valid = validOutbound(outbound);
+				if(valid){
+					valid.subscribeUrl = subscribeUrl;
+					..table.push(outbounds,valid);
+				}
+			} 
+			
+			continue;
+		}
 		
 		var clashJson = ..string.match(line,`^\s*-\s*(%\{\})\s*$`);
 		if( clashJson ) {
@@ -1183,6 +1379,10 @@ importFromString = function(str,subscribeUrl){
 					}
 					if(outbound.type=="tuic"){
 						outbound.type = "tuic";
+						outbound.network = "quic";
+					}
+					if(outbound.type=="hysteria2" || outbound.type=="hy2" || outbound.type=="hysteria"){
+						outbound.type = "hysteria2";
 						outbound.network = "quic";
 					}
 					outbound.protocol = outbound.type;
@@ -1489,6 +1689,46 @@ validOutbound = function(outbound){
 		}
 		if(outbound.uuid && outbound.password && !outbound.id){
 			outbound.id = outbound.uuid + ":" + outbound.password;
+		}
+	}
+	
+	if(outbound.protocol == "hysteria2" || outbound.protocol == "hy2" || outbound.protocol == "hysteria"){
+		outbound.protocol = "hysteria2";
+		outbound.network = "quic";
+		if(outbound["obfs-password"] && !outbound.obfs_password){
+			outbound.obfs_password = outbound["obfs-password"];
+			outbound["obfs-password"] = null;
+		}
+		if(outbound["obfs-type"] && !outbound.obfs){
+			outbound.obfs = outbound["obfs-type"];
+			outbound["obfs-type"] = null;
+		}
+		if(outbound["pin-sha256"] && !outbound.pinSHA256){
+			outbound.pinSHA256 = outbound["pin-sha256"];
+			outbound["pin-sha256"] = null;
+		}
+		if(outbound["ports"] && !outbound.port){
+			outbound.port = outbound["ports"];
+		}
+		if(outbound.auth && !outbound.password && !outbound.id){
+			outbound.id = outbound.auth;
+			outbound.password = outbound.auth;
+		}
+		if(outbound.id && !outbound.password){
+			var u,p = ..string.match(outbound.id,"([^\:]+)\:(.+)");
+			if(u && p){
+				outbound.user = u;
+				outbound.password = p;
+			}
+			else {
+				outbound.password = outbound.id;
+			}
+		}
+		elseif(outbound.user && outbound.password && !outbound.id){
+			outbound.id = outbound.user + ":" + outbound.password;
+		}
+		elseif(outbound.password && !outbound.id){
+			outbound.id = outbound.password;
 		}
 	}
 	

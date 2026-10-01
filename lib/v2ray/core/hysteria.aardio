@@ -1,0 +1,280 @@
+//hysteria 内核进程（Hysteria 2）
+import fsys;
+import wsock.tcp.server;
+import v2ray.core.hysteriaJson;
+import process.popen;
+import config;
+import win.dlg.message;
+import inet.downBox;
+
+namespace v2ray.core.hysteria;
+
+var prcsHysteria;
+import process.job.limitKill;
+restart = function(editor,outbound,hysteriaSocksPort){
+ 
+	if(prcsHysteria){
+		prcsHysteria.terminate();
+		prcsHysteria = null;
+	}
+
+	var corePath = getPath(editor.hwnd);
+	if(!corePath){ return false,"启动失败,未找到 hysteria.exe"; } 
+
+	import v2ray.core.hysteriaJson;
+	var configPath = ..io.joinpath(..io.splitpath(corePath).dir,"config.json");
+	var jsonPath,err = ..v2ray.core.hysteriaJson.write(configPath,outbound,hysteriaSocksPort);
+
+	if(!jsonPath){
+		return false,err:"启动失败,写入 Hysteria 配置文件遇到错误！"; 
+	}
+	 
+	..string.setenv("NO_COLOR","1");
+	..string.setenv("CLICOLOR","0");
+
+	var err;
+	prcsHysteria,err = ..process.popen(corePath, "client", "-c", configPath);
+	if(!prcsHysteria){
+		prcsHysteria,err = ..process.popen(corePath, "-c", configPath);
+	}
+	if(!prcsHysteria){
+		..publish("uiCommand.print",err:"启动 Hysteria Core 时遇到未知错误!");  
+		return false,err;
+	}
+	else{
+		..publish("uiCommand.print","Hysteria Core 已启动，端口:" + hysteriaSocksPort);  
+	}
+	prcsHysteria.assignToJobObject(process.job.limitKill);
+	prcsHysteria.codepage = 65001;	
+	prcsHysteria.logResponse(editor); 
+	 
+	return true;
+}
+
+stop = function(){
+	if(prcsHysteria){
+		prcsHysteria.terminate();
+		prcsHysteria = null;
+	} 
+	import process.file;
+	var targetExe = getPath();
+	if(targetExe) process.file.terminate(targetExe);
+	process.file.terminate("hysteria.exe");
+	process.file.terminate("hysteria-client.exe");
+}
+
+isRunning = function(){
+	return !!prcsHysteria;
+}
+
+var getHysteriaCoreUrl = function(){
+    var msgDlg = ..win.dlg.message(..mainForm); 
+	var form = msgDlg.create('正在获取 Hysteria Core 最新版本',,true);
+	form.icon = '\uF0E4';
+	form.progress.startProgress(50); 
+	
+	var url,versionTag = ..win.invoke(function(){
+    	import process;
+		import inet.http;
+		var http = ..inet.http();
+		var loc = http.location("https://github.com/HyNetworks/hysteria/releases/latest");
+		if(!loc) loc = http.location("https://github.com/apernet/hysteria/releases/latest");
+		if(loc && ..string.find(loc,"/releases/latest")){
+			loc = http.location(loc);
+		}
+		http.close();
+		
+		var tag;
+		if(loc){
+			tag = ..string.match(loc,"releases/tag/(.+)");
+		}
+		if(!tag || (tag=="latest")) tag = "app/v2.12.3";
+		
+		var arch = ..process().isWow64() ? "amd64" : "386";
+		return "https://github.com/HyNetworks/hysteria/releases/download/" 
+			+ tag + "/hysteria-windows-" + arch + ".exe", tag;	
+	});
+	
+	form.close();
+	
+	return url,versionTag; 
+}
+
+downloadCore = function(parentForm){
+	var parent = parentForm : ..mainForm;
+
+	var url,versionTag = getHysteriaCoreUrl();
+	var coreDir = getCoreDir();
+	if(!url) {
+		..publish("uiCommand.print","请下载 Hysteria Core 保存到以下目录内:");
+		..publish("uiCommand.print",coreDir);
+		
+		self.lastDownloadingCoreFailed = true;
+		return null;
+	}
+	
+	import inet.downBox;
+	var targetExe = ..io.joinpath(coreDir,"hysteria.exe");
+	..io.createDir(coreDir);
+
+	var downBox = ..inet.downBox(parent,"正在下载 Hysteria Core",true);
+	if(!downBox){
+		self.lastDownloadingCoreFailed = true;
+		return null;
+	}
+	var ok = downBox.download(url, targetExe);
+
+	if(ok && ..io.exist(targetExe)){
+		self.lastDownloadingCoreFailed = null;
+		return targetExe;
+	}
+	else {
+		self.lastDownloadingCoreFailed = true;
+		
+		..publish("uiCommand.print","请到以下网址下载 Hysteria Core (hysteria.exe):");
+		..publish("uiCommand.print",url);
+		
+		..publish("uiCommand.print","下载后请保存到以下目录内:");
+		..publish("uiCommand.print",coreDir); 
+	} 	
+}
+ 
+getPath = function(hwnd){
+	var path = ..io.fullpath("/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
+	var path = ..io.fullpath("/hysteria-core/hysteria-client.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
+	var path = ..io.fullpath("/hysteria.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
+	var path = ..io.fullpath("/hysteria-client.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
+	var path = ..io.fullpath("/xray-core/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+
+	var path = ..io.fullpath("/v2ray-core/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+		
+	var path = ..io.appData("/winXray/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return path;
+	}
+	
+	if(self.lastDownloadingCoreFailed){
+		return;
+	}
+
+	return downloadCore();
+} 
+
+getCoreDir = function(hwnd){
+	var path = ..io.fullpath("/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/hysteria-core/");
+	}
+
+	var path = ..io.fullpath("/hysteria-core/hysteria-client.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/hysteria-core/");
+	}
+
+	var path = ..io.fullpath("/hysteria.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/");
+	}
+
+	var path = ..io.fullpath("/hysteria-client.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/");
+	}
+
+	var path = ..io.fullpath("/xray-core/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/xray-core/hysteria-core/");
+	}
+
+	var path = ..io.fullpath("/v2ray-core/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return ..io.fullpath("/v2ray-core/hysteria-core/");
+	}
+		
+	var path = ..io.appData("/winXray/hysteria-core/hysteria.exe");
+	if(..io.exist(path)){
+		return ..io.appData("/winXray/hysteria-core/");
+	}
+	
+	if(..io.exist(..io.fullpath("/hysteria-core/"))){
+		return ..io.fullpath("/hysteria-core/");
+	}
+	
+	if(..io.exist(..io.fullpath("/xray-core/")) || ..io.exist(..io.fullpath("/v2ray-core/"))){
+		return ..io.fullpath("/hysteria-core/");
+	}
+		
+	return ..io.appData("/winXray/hysteria-core/");
+} 
+
+updateCore = function(parentForm){
+	var parent = parentForm : ..mainForm;
+  	
+	var coreDir = getCoreDir(); 
+	var url,versionTag = getHysteriaCoreUrl();
+	if(!url){		
+		self.lastDownloadingCoreFailed = true;
+		return null;
+	}
+	
+	import fsys;
+	fsys.delete(..io.appData("/winXray/temp/hysteria/"));
+ 
+	import inet.downBox;
+	var targetExe = ..io.joinpath(coreDir,"hysteria.exe");
+	var tempExe = ..io.appData("/winXray/temp/hysteria/hysteria.exe");
+	..io.createDir(..io.appData("/winXray/temp/hysteria/"));
+
+	var downBox = ..inet.downBox(parent,"正在下载 Hysteria Core，版本：" + versionTag,true);
+	if(!downBox){
+		self.lastDownloadingCoreFailed = true;
+		return null;
+	}
+	var ok = downBox.download(url, tempExe);
+
+	if( ok && ..io.exist(tempExe) ){
+		import sysProxy;
+		sysProxy.reset(false);
+
+		import process.file;
+		process.file.terminate(targetExe); 
+		process.file.terminate("hysteria.exe");
+		process.file.terminate("hysteria-client.exe");
+		
+		..io.createDir(coreDir);  
+		fsys.copy(tempExe,targetExe);  
+		
+		self.lastDownloadingCoreFailed = null;
+		return versionTag;
+	}
+	else {
+		self.lastDownloadingCoreFailed = true; 
+	}  
+}
+
+/**intellisense(v2ray.core.hysteria) 
+restart(.(editor,outbound) = 重启启动 Hysteria 服务进程
+lastDownloadingCoreFailed = 上次下载 Core 是否失败,如果希望重新下载请重新赋值为 null
+end intellisense**/

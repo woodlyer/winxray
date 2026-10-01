@@ -1,6 +1,6 @@
 
 WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版版本号开发到 3.8（原地址已失效）。  
-本项目在原有基础上持续修复与演进，全面适配新版 Xray-core、REALITY、 TUIC 等主流协议，提升稳定性和交互体验。
+本项目在原有基础上持续修复与演进，全面适配新版 Xray-core、REALITY、Hysteria 2、TUIC 等主流协议，提升稳定性和交互体验。
 
 ---
 
@@ -11,9 +11,17 @@ WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版
 
 ---
 
-## 📝 本版本更新内容 (Current Version - v3.15)
+## 📝 本版本更新内容 (Current Version)
 
-### 1. 全面支持 TUIC (v5) 协议
+### 1. 全面支持 Hysteria 2 协议
+- **协议完整支持**：全面支持基于 UDP/QUIC Brutal 拥塞控制的高速代理协议 Hysteria 2；
+- **分享链接与配置导入**：支持标准 `hysteria2://` 及 `hy2://` 分享链接的解析与导入导出，支持 Clash Meta 等通用 JSON / YAML 节点配置；
+- **独立内核调度架构**：接入 [apernet/hysteria](https://github.com/apernet/hysteria) 官方内核，winXray 在后台自动启动 `hysteria.exe` 并由 Xray Core 统一进行路由规则分流与系统代理接管；
+- **完整特性支持**：支持配置认证密码 / 用户名密码、SNI、ALPN、Salamander / Gecko 混淆类型与混淆密码、证书 SHA256 指纹绑定 (pinSHA256)、上下行带宽限制 (up / down)、多端口跳跃 (ports / mport)、Fast Open、Lazy 模式等；
+- **一键在线获取与更新**：配置界面新增「下载 / 更新 Hysteria Core」专属按钮，自动匹配 Windows 32位/64位 平台并高速下载最新版本；
+- **便携路径优先**：优先识别并存放于应用程序同级 `./hysteria-core/hysteria.exe`（绿色便携模式），向下兼容系统缓存与历史目录。
+
+### 2. 全面支持 TUIC (v5) 协议
 - **协议完整支持**：全面支持基于 QUIC 的新一代低延迟代理协议 TUIC；
 - **分享链接与配置导入**：支持标准 `tuic://` 分享链接的解析与导入，支持通用 JSON 格式配置；
 - **独立内核调度架构**：接入 [Itsusinn/tuic](https://github.com/Itsusinn/tuic) 内核，winXray 在后台自动启动 `tuic-client.exe` 并由 Xray Core 统一进行路由规则分流与代理接管；
@@ -63,7 +71,7 @@ WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版
 --------------------------------------------------------------------------------------------------
 
 # WinXray 
-WinXray[:loud_sound:](http://dict.youdao.com/dictvoice?audio=winxray&type=2) 是最简洁轻快的 V2Ray、XRay、Trojan、Trojan-go、Shadowsocks、SSR(ShadowsocksR)、SSRoT、NaïveProxy、TUIC，SOCKS，HTTP,HTTPS 全能通用客户端（Windows系统），支持并发检测大量服务器并迅速找到当前最快的服务器，服务器连接异常时可自动寻找其他速度最快的服务器 - 切换速度快如闪电，自订阅源获取的服务器异常时可自动刷新订阅，并且自带一键自动部署服务端工具。
+WinXray[:loud_sound:](http://dict.youdao.com/dictvoice?audio=winxray&type=2) 是最简洁轻快的 V2Ray、XRay、Trojan、Trojan-go、Shadowsocks、SSR(ShadowsocksR)、SSRoT、NaïveProxy、Hysteria 2、TUIC，SOCKS，HTTP,HTTPS 全能通用客户端（Windows系统），支持并发检测大量服务器并迅速找到当前最快的服务器，服务器连接异常时可自动寻找其他速度最快的服务器 - 切换速度快如闪电，自订阅源获取的服务器异常时可自动刷新订阅，并且自带一键自动部署服务端工具。
 
 **本软件源码已放弃版权贡献到公共域** ，源码可使用 [aardio](http://www.aardio.com) 编译生成单文件绿色EXE，**[点这里下载](./../../raw/master/release/winXray.7z)** （ [64位版本](./../../raw/master/release/winXray.7z) / [32位版本](./../../raw/master/release/winXray32.7z) ），解压即可直接使用( 体积很小仅  **[6.1 MB](./../../raw/master/release/winXray.7z)** - 已自带 V2Ray Core ）。  
 
@@ -150,7 +158,16 @@ IP 段代理规则：
   - [Xray-windows-32.zip (v25.1.1 32位下载)](https://github.com/XTLS/Xray-core/releases/download/v25.1.1/Xray-windows-32.zip)
   解压后将 `xray.exe` 放入 `./xray-core/` 目录即可。
 
-### 2. TUIC Core (tuic-client)
+### 2. Hysteria 2 Core (hysteria)
+- **查找目录**：`./hysteria-core/` 或 `%localappdata%\winXray\hysteria-core`（亦支持直接放在软件同级目录）
+- **项目仓库**：https://github.com/apernet/hysteria
+- **Releases 发布页**：https://github.com/apernet/hysteria/releases
+- **Windows 下载直链**：
+  - [64位：hysteria-windows-amd64.exe](https://github.com/apernet/hysteria/releases/latest/download/hysteria-windows-amd64.exe)
+  - [32位：hysteria-windows-386.exe](https://github.com/apernet/hysteria/releases/latest/download/hysteria-windows-386.exe)
+  下载后重命名为 `hysteria.exe` 保存到 `./hysteria-core/` 目录即可。
+
+### 3. TUIC Core (tuic-client)
 - **查找目录**：`./tuic-core/` 或 `%localappdata%\winXray\tuic-core`（亦支持直接放在软件同级目录）
 - **项目仓库**：https://github.com/Itsusinn/tuic
 - **Releases 发布页**：https://github.com/Itsusinn/tuic/releases
@@ -159,16 +176,16 @@ IP 段代理规则：
   - [32位：tuic-client-i686-windows.exe](https://github.com/Itsusinn/tuic/releases/download/v2.0.0-dev7/tuic-client-i686-windows.exe)
   下载后重命名为 `tuic-client.exe` 保存到 `./tuic-core/` 目录即可。
 
-### 3. SSR Core
+### 4. SSR Core
 - **查找目录**：`./v2ray-core/ssr-core` 或 `%localappdata%\winXray\ssr-core`
 
-### 4. NaïveProxy Core
+### 5. NaïveProxy Core
 - **查找目录**：`./v2ray-core/naive-core` 或 `%localappdata%\winXray\naive-core`
 - **Releases 发布页**：https://github.com/klzgrad/naiveproxy/releases
 
 > 提示：没有代理直连访问 Github 可能会很慢或超时，建议在 winXray 的「工具」页中运行自带的【Github 网速优化工具】加速访问。
 
-注意不同的代理协议连接时会调用不同的 Core，例如 NaïveProxy 连接时会启动 naive.exe，TUIC 连接时会启动 tuic-client.exe，此时系统防火墙如弹出提示请点击允许。  
+注意不同的代理协议连接时会调用不同的 Core，例如 NaïveProxy 连接时会启动 naive.exe，Hysteria 连接时会启动 hysteria.exe，TUIC 连接时会启动 tuic-client.exe，此时系统防火墙如弹出提示请点击允许。  
 
 # 安装 NaïveProxy 服务端 
 
