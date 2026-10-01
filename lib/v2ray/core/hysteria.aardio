@@ -67,8 +67,9 @@ isRunning = function(){
 	return !!prcsHysteria;
 }
 
-var getHysteriaCoreUrl = function(){
-    var msgDlg = ..win.dlg.message(..mainForm); 
+var getHysteriaCoreUrl = function(parentForm){
+    var parent = parentForm : ..mainForm;
+    var msgDlg = ..win.dlg.message(parent); 
 	var form = msgDlg.create('正在获取 Hysteria Core 最新版本',,true);
 	form.icon = '\uF0E4';
 	form.progress.startProgress(50); 
@@ -86,13 +87,14 @@ var getHysteriaCoreUrl = function(){
 		
 		var tag;
 		if(loc){
-			tag = ..string.match(loc,"releases/tag/(.+)");
+			tag = ..string.match(loc,"releases/tag/([^\r\n\s\?\#]+)");
 		}
 		if(!tag || (tag=="latest")) tag = "app/v2.12.3";
 		
 		var arch = ..process().isWow64() ? "amd64" : "386";
+		var cleanTag = ..string.replace(tag,"^app/","");
 		return "https://github.com/HyNetworks/hysteria/releases/download/" 
-			+ tag + "/hysteria-windows-" + arch + ".exe", tag;	
+			+ tag + "/hysteria-windows-" + arch + ".exe", cleanTag;	
 	});
 	
 	form.close();
@@ -103,7 +105,7 @@ var getHysteriaCoreUrl = function(){
 downloadCore = function(parentForm){
 	var parent = parentForm : ..mainForm;
 
-	var url,versionTag = getHysteriaCoreUrl();
+	var url,versionTag = getHysteriaCoreUrl(parent);
 	var coreDir = getCoreDir();
 	if(!url) {
 		..publish("uiCommand.print","请下载 Hysteria Core 保存到以下目录内:");
@@ -114,7 +116,11 @@ downloadCore = function(parentForm){
 	}
 	
 	import inet.downBox;
+	import process.file;
 	var targetExe = ..io.joinpath(coreDir,"hysteria.exe");
+	process.file.terminate(targetExe);
+	process.file.terminate("hysteria.exe");
+	process.file.terminate("hysteria-client.exe");
 	..io.createDir(coreDir);
 
 	var downBox = ..inet.downBox(parent,"正在下载 Hysteria Core",true);
@@ -179,7 +185,7 @@ getPath = function(hwnd){
 		return;
 	}
 
-	return downloadCore();
+	return downloadCore(hwnd);
 } 
 
 getCoreDir = function(hwnd){
@@ -233,7 +239,7 @@ updateCore = function(parentForm){
 	var parent = parentForm : ..mainForm;
   	
 	var coreDir = getCoreDir(); 
-	var url,versionTag = getHysteriaCoreUrl();
+	var url,versionTag = getHysteriaCoreUrl(parent);
 	if(!url){		
 		self.lastDownloadingCoreFailed = true;
 		return null;
