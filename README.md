@@ -11,7 +11,7 @@ WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版
 
 ---
 
-## 📝 本版本更新内容 (Current Version)
+## 📝 本版本更新内容 (Current Version - v3.20)
 
 ### 1. 全面支持 Hysteria 2 协议
 - **协议完整支持**：全面支持基于 UDP/QUIC Brutal 拥塞控制的高速代理协议 Hysteria 2；
