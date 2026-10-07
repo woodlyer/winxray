@@ -214,7 +214,59 @@ winform.cmbProtocol.onListChange = function(){
 	winform.cmbProtocol.onProtocolChange(); 
 
 	table.define(winform.outboundConfig);
-	winform.outboundConfig.protocol = winform.cmbProtocol.selText;;
+	var sel = winform.cmbProtocol.selText;
+	winform.outboundConfig.protocol = sel;
+
+	var isNewNode = (!winform.origOutboundConfig) || (!#winform.origOutboundConfig.address);
+	if(isNewNode){
+		if(sel == "hysteria2" || sel == "hy2"){
+			winform.outboundConfig.sni = winform.outboundConfig.sni : (winform.outboundConfig.address : "");
+			if(winform.outboundConfig.allowInsecure === null) winform.outboundConfig.allowInsecure = false;
+			winform.outboundConfig.alpn = winform.outboundConfig.alpn : {"h3"};
+			if(!winform.outboundConfig.id && !winform.outboundConfig.password){
+				winform.btnGenGuid.oncommand();
+			}
+		}
+		elseif(sel == "tuic"){
+			winform.outboundConfig.sni = winform.outboundConfig.sni : (winform.outboundConfig.address : "");
+			winform.outboundConfig.congestion_control = winform.outboundConfig.congestion_control : "bbr";
+			winform.outboundConfig.udp_relay_mode = winform.outboundConfig.udp_relay_mode : "native";
+			if(winform.outboundConfig.allowInsecure === null) winform.outboundConfig.allowInsecure = false;
+			winform.outboundConfig.alpn = winform.outboundConfig.alpn : {"h3"};
+			if(!winform.outboundConfig.id && !winform.outboundConfig.uuid){
+				winform.btnGenGuid.oncommand();
+			}
+		}
+		elseif(sel == "vless"){
+			if(!#winform.outboundConfig.tls && winform.outboundConfig.security != "tls" && winform.outboundConfig.security != "reality"){
+				winform.outboundConfig.tls = "reality";
+				winform.cmbSecurity.selText = "reality";
+			}
+			if(winform.outboundConfig.tls == "reality" || winform.cmbSecurity.selText == "reality"){
+				winform.outboundConfig.publicKey = winform.outboundConfig.publicKey : "";
+				winform.outboundConfig.shortId = winform.outboundConfig.shortId : "";
+				winform.outboundConfig.sni = winform.outboundConfig.sni : "";
+				winform.outboundConfig.flow = winform.outboundConfig.flow : "xtls-rprx-vision";
+				winform.outboundConfig.fingerprint = winform.outboundConfig.fingerprint : "chrome";
+			}
+			if(!winform.outboundConfig.id){
+				winform.btnGenGuid.oncommand();
+			}
+		}
+		elseif(sel == "trojan" || sel == "trojan-go"){
+			winform.outboundConfig.sni = winform.outboundConfig.sni : (winform.outboundConfig.address : "");
+			winform.outboundConfig.tls = "tls";
+			if(!winform.outboundConfig.id){
+				winform.btnGenGuid.oncommand();
+			}
+		}
+		elseif(sel == "vmess"){
+			if(!winform.outboundConfig.id){
+				winform.btnGenGuid.oncommand();
+			}
+		}
+	}
+
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
 	winform.updateSharedLink();
 }
@@ -464,7 +516,32 @@ var insertFieldMenu = {
 	};
 	{ "允许忽略证书:allowInsecure";
 		function(id){
-			winform.addOutboundField("allowInsecure",true);
+			winform.addOutboundField("allowInsecure",false);
+		} 
+	};
+	{ "TUIC 拥塞控制:congestion_control (bbr/cubic)";
+		function(id){
+			winform.addOutboundField("congestion_control","bbr");
+		} 
+	};
+	{ "TUIC UDP转发模式:udp_relay_mode (native/quic)";
+		function(id){
+			winform.addOutboundField("udp_relay_mode","native");
+		} 
+	};
+	{ "Hysteria2 混淆类型:obfs (salamander)";
+		function(id){
+			winform.addOutboundField("obfs","salamander");
+		} 
+	};
+	{ "Hysteria2 混淆密码:obfs_password";
+		function(id){
+			winform.addOutboundField("obfs_password","");
+		} 
+	};
+	{ "TLS证书SHA256固定指纹:pinSHA256";
+		function(id){
+			winform.addOutboundField("pinSHA256","");
 		} 
 	};
 	{ "多路复用最大连接:concurrency";
