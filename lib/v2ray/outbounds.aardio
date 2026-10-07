@@ -1218,7 +1218,7 @@ importFromString = function(str,subscribeUrl){
 			continue;
 		}
 
-		var hy2 = ..string.match(line,`((?:hysteria2|hy2)\:\/\/\S+)`);
+		var hy2 = ..string.match(line,`(hysteria2\:\/\/\S+)`) : ..string.match(line,`(hy2\:\/\/\S+)`);
 		if( hy2 ) {
 			var hy2Url = ..inet.url.split(hy2);
 			var host = hy2Url ? hy2Url.host : null;
@@ -1227,7 +1227,7 @@ importFromString = function(str,subscribeUrl){
 			var p = hy2Url ? hy2Url.password : null;
 			
 			if(!host){
-				var userinfo,h,prt = ..string.match(hy2,`(?:hysteria2|hy2)\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
+				var userinfo,h,prt = ..string.match(hy2,`\:\/\/([^\@\s]+)\@([^\:\?\#\/]+)<:(\d+)>*`);
 				if(h){
 					host = h;
 					if(prt) port = tonumber(prt) : 443;
@@ -1237,7 +1237,7 @@ importFromString = function(str,subscribeUrl){
 					}
 				}
 				else {
-					var h2,prt2 = ..string.match(hy2,`(?:hysteria2|hy2)\:\/\/([^\:\?\#\/]+)<:(\d+)>*`);
+					var h2,prt2 = ..string.match(hy2,`\:\/\/([^\:\?\#\/]+)<:(\d+)>*`);
 					if(h2){
 						host = h2;
 						if(prt2) port = tonumber(prt2) : 443;
