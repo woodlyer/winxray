@@ -234,13 +234,29 @@ mainForm.navExit.skin({
 		active=0xFFFF2222;
 	};
 })
-mainForm.navExit.oncommand = function(id,event){
+mainForm.exitApplication = function(){
+	mainForm.onClose = null;
+	if(mainForm.tray){
+		mainForm.tray.delete();
+		mainForm.tray = null;
+	}
+	mainForm.show(false);
+	
 	import sysProxy;
 	sysProxy.reset(false);
+	
 	import v2ray.core;
 	v2ray.core.stop();
-	mainForm.onClose = null;
+	
+	import v2ray.pacServer;
+	v2ray.pacServer.stop();
+	
 	mainForm.close();
+	win.quitMessage();
+}
+
+mainForm.navExit.oncommand = function(id,event){
+	mainForm.exitApplication();
 }
 
 import v2ray.core;
@@ -334,8 +350,7 @@ mainForm.wndproc = {
 			
 			mainForm.popmenu.add();
 			mainForm.popmenu.add('退出',function(id){ 
-				mainForm.onClose = null;
-				mainForm.close()
+				mainForm.exitApplication();
 			});
 		
 			var pt = ::POINT();

@@ -69,15 +69,17 @@ restart = function(editor,outbound,naiveSocksPort){
 	return true;
 }
 
-stop = function(){
+stop = function(terminateAll){
 	if(prcsNaive){
 		prcsNaive.terminate();
 		prcsNaive = null;
 	} 
-	import process.file;
-	var coreDir = ..io.appData("/winXray/core/");
-	process.file.terminate(..io.joinpath(coreDir,"naive.exe")); 
-	process.file.terminate("naive.exe");
+	if(terminateAll){
+		import process.file;
+		var coreDir = ..io.appData("/winXray/core/");
+		process.file.terminate(..io.joinpath(coreDir,"naive.exe")); 
+		process.file.terminate("naive.exe");
+	}
 }
 
 isRunning = function(){

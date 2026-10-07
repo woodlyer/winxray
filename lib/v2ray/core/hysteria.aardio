@@ -51,16 +51,18 @@ restart = function(editor,outbound,hysteriaSocksPort){
 	return true;
 }
 
-stop = function(){
+stop = function(terminateAll){
 	if(prcsHysteria){
 		prcsHysteria.terminate();
 		prcsHysteria = null;
 	} 
-	import process.file;
-	var targetExe = getPath();
-	if(targetExe) process.file.terminate(targetExe);
-	process.file.terminate("hysteria.exe");
-	process.file.terminate("hysteria-client.exe");
+	if(terminateAll){
+		import process.file;
+		var targetExe = getPath();
+		if(targetExe) process.file.terminate(targetExe);
+		process.file.terminate("hysteria.exe");
+		process.file.terminate("hysteria-client.exe");
+	}
 }
 
 isRunning = function(){

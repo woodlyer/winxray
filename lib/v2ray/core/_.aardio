@@ -218,30 +218,32 @@ restart = function(editor,outbound){
 	return true;
 }
 
-stop = function(){
-	..v2ray.core.ssr.stop();
-	..v2ray.core.naive.stop();
-	..v2ray.core.tuic.stop();
-	..v2ray.core.hysteria.stop();
+stop = function(terminateAll){
+	..v2ray.core.ssr.stop(terminateAll);
+	..v2ray.core.naive.stop(terminateAll);
+	..v2ray.core.tuic.stop(terminateAll);
+	..v2ray.core.hysteria.stop(terminateAll);
 	
 	if(prcsV2Ray){
 		prcsV2Ray.terminate();
 		prcsV2Ray = null;
 	}
 	
-	import process.file;
-	var xrayPath = getPath();
-	if(xrayPath){
-		process.file.terminate(xrayPath);
+	if(terminateAll){
+		import process.file;
+		var xrayPath = getPath();
+		if(xrayPath){
+			process.file.terminate(xrayPath);
+		}
+		process.file.terminate("xray.exe"); 
+		process.file.terminate("v2ray.exe"); 
+		process.file.terminate("v2ctl.exe"); 
+		process.file.terminate("tuic-client.exe");
+		process.file.terminate("hysteria.exe");
+		process.file.terminate("hysteria-client.exe");
+		process.file.terminate("naive.exe");
+		process.file.terminate("ssr-client.exe");
 	}
-	process.file.terminate("xray.exe"); 
-	process.file.terminate("v2ray.exe"); 
-	process.file.terminate("v2ctl.exe"); 
-	process.file.terminate("tuic-client.exe");
-	process.file.terminate("hysteria.exe");
-	process.file.terminate("hysteria-client.exe");
-	process.file.terminate("naive.exe");
-	process.file.terminate("ssr-client.exe");
 	
 	..sysProxy.reset(false);
 

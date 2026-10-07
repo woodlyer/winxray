@@ -44,15 +44,17 @@ restart = function(editor,outbound,ssrSocksPort){
 	return true;
 }
 
-stop = function(){
+stop = function(terminateAll){
 	if(prcsSsr){
 		prcsSsr.terminate();
 		prcsSsr = null;
 	} 
-	import process.file;
-	var coreDir = ..io.appData("/winXray/core/");
-	process.file.terminate(..io.joinpath(coreDir,"ssr-client.exe")); 
-	process.file.terminate("ssr-client.exe");
+	if(terminateAll){
+		import process.file;
+		var coreDir = ..io.appData("/winXray/core/");
+		process.file.terminate(..io.joinpath(coreDir,"ssr-client.exe")); 
+		process.file.terminate("ssr-client.exe");
+	}
 }
 
 isRunning = function(){
