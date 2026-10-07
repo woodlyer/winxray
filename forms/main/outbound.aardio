@@ -221,7 +221,7 @@ winform.cmbProtocol.onListChange = function(){
 	var isNewNode = (!winform.origOutboundConfig) || (!#winform.origOutboundConfig.address);
 	if(isNewNode){
 		if(sel == "hysteria2" || sel == "hy2"){
-			winform.outboundConfig.sni = winform.outboundConfig.sni : (winform.outboundConfig.address : "");
+			winform.outboundConfig.sni = #winform.outboundConfig.sni ? winform.outboundConfig.sni : (winform.outboundConfig.address : "");
 			if(winform.outboundConfig.allowInsecure === null) winform.outboundConfig.allowInsecure = false;
 			winform.outboundConfig.alpn = winform.outboundConfig.alpn : {"h3"};
 			if(!winform.outboundConfig.id && !winform.outboundConfig.password){
@@ -229,7 +229,7 @@ winform.cmbProtocol.onListChange = function(){
 			}
 		}
 		elseif(sel == "tuic"){
-			winform.outboundConfig.sni = winform.outboundConfig.sni : (winform.outboundConfig.address : "");
+			winform.outboundConfig.sni = #winform.outboundConfig.sni ? winform.outboundConfig.sni : (winform.outboundConfig.address : "");
 			winform.outboundConfig.congestion_control = winform.outboundConfig.congestion_control : "bbr";
 			winform.outboundConfig.udp_relay_mode = winform.outboundConfig.udp_relay_mode : "native";
 			if(winform.outboundConfig.allowInsecure === null) winform.outboundConfig.allowInsecure = false;
@@ -385,7 +385,16 @@ winform.editPort.editBox.onChange = function(){
 }
 
 winform.editAddress.editBox.onChange = function(){  
-	winform.outboundConfig.address = owner.text;
+	var oldAddr = winform.outboundConfig.address;
+	var newAddr = owner.text;
+	winform.outboundConfig.address = newAddr;
+	
+	var proto = winform.outboundConfig.protocol;
+	if(proto == "hysteria2" || proto == "hy2" || proto == "tuic" || proto == "trojan" || proto == "trojan-go"){
+		if(!#winform.outboundConfig.sni || winform.outboundConfig.sni == oldAddr){
+			winform.outboundConfig.sni = newAddr;
+		}
+	}
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
 	winform.updateSharedLink();
 }
