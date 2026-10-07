@@ -56,6 +56,9 @@ winform.addOutboundField = function(k,v){
 
 winform.cmbProtocol.onProtocolChange = function(keepExisting){ 
 	var sel = winform.cmbProtocol.selText;
+	if(sel != "hysteria2" && sel != "hy2" && sel != "tuic"){
+		winform.lbSecurity.text = "加密方式( security ):";
+	}
 	if(sel=="vmess"){
 		winform.cmbSecurity.items = {
 			"auto";"none";"chacha20-poly1305";"aes-128-gcm"
@@ -130,10 +133,12 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 		winform.editId.setCueBannerText("请输入密码");
 	}
 	elseif(sel=="hysteria2" || sel=="hy2"){
-		winform.cmbSecurity.items = {"none";}
+		winform.lbSecurity.text = "ALPN 协商:";
+		winform.cmbSecurity.items = {"h3";"默认(无)";"h2";"h2,http/1.1";"http/1.1"};
 		winform.cmbNetwork.items = {"quic";}
 		if(!keepExisting){
 			winform.cmbSecurity.selIndex = 1;
+			winform.outboundConfig.alpn = {"h3"};
 			winform.outboundConfig.security = "none";
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "quic";
@@ -142,10 +147,12 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 		winform.editId.setCueBannerText("请输入认证密码 或 用户名:密码");
 	}
 	elseif(sel=="tuic"){
-		winform.cmbSecurity.items = {"none";}
+		winform.lbSecurity.text = "ALPN 协商:";
+		winform.cmbSecurity.items = {"h3";"默认(无)";"h2";"h2,http/1.1";"http/1.1"};
 		winform.cmbNetwork.items = {"quic";}
 		if(!keepExisting){
 			winform.cmbSecurity.selIndex = 1;
+			winform.outboundConfig.alpn = {"h3"};
 			winform.outboundConfig.security = "none";
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "quic";
@@ -280,19 +287,34 @@ winform.cmbNetwork.onListChange = function(){
 
 winform.cmbSecurity.onListChange = function(){ 
 	var sel = winform.cmbSecurity.selText;
-	winform.outboundConfig.security = sel;
-	if(winform.outboundConfig.protocol == "vless"){
-		if(sel == "reality"){
-			winform.outboundConfig.tls = "reality";
-			winform.outboundConfig.security = "none";
+	var proto = winform.outboundConfig.protocol;
+
+	if(proto == "hysteria2" || proto == "hy2" || proto == "tuic"){
+		if(sel == "默认(无)" || !#sel){
+			winform.outboundConfig.alpn = null;
 		}
-		elseif(sel == "tls"){
-			winform.outboundConfig.tls = "tls";
-			winform.outboundConfig.security = "none";
+		elseif(sel == "h2,http/1.1"){
+			winform.outboundConfig.alpn = {"h2";"http/1.1"};
 		}
-		elseif(sel == "none"){
-			winform.outboundConfig.tls = "";
-			winform.outboundConfig.security = "none";
+		else {
+			winform.outboundConfig.alpn = {sel};
+		}
+	}
+	else {
+		winform.outboundConfig.security = sel;
+		if(proto == "vless"){
+			if(sel == "reality"){
+				winform.outboundConfig.tls = "reality";
+				winform.outboundConfig.security = "none";
+			}
+			elseif(sel == "tls"){
+				winform.outboundConfig.tls = "tls";
+				winform.outboundConfig.security = "none";
+			}
+			elseif(sel == "none"){
+				winform.outboundConfig.tls = "";
+				winform.outboundConfig.security = "none";
+			}
 		}
 	}
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);	
@@ -696,7 +718,23 @@ var onEditChange = win.debounce(
 		winform.cmbNetwork.selText = data.network;
 		winform.cmbProtocol.selText = data.protocol;
 		winform.cmbProtocol.onProtocolChange(true);
-		if(data.protocol == "vless"){
+		if(data.protocol == "hysteria2" || data.protocol == "hy2" || data.protocol == "tuic"){
+			var alpnStr = "";
+			if(type(data.alpn) == "table"){
+				if(#data.alpn == 1) alpnStr = data.alpn[1];
+				elseif(#data.alpn > 1) alpnStr = string.join(data.alpn, ",");
+			}
+			elseif(type(data.alpn) == "string"){
+				alpnStr = data.alpn;
+			}
+			if(#alpnStr){
+				winform.cmbSecurity.selText = alpnStr;
+			}
+			else {
+				winform.cmbSecurity.selText = "默认(无)";
+			}
+		}
+		elseif(data.protocol == "vless"){
 			if(data.tls == "reality" || data.security == "reality" || (#data.publicKey) || (#data.pbk)){
 				winform.cmbSecurity.selText = "reality";
 			}
