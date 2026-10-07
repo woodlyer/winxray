@@ -56,9 +56,7 @@ winform.addOutboundField = function(k,v){
 
 winform.cmbProtocol.onProtocolChange = function(keepExisting){ 
 	var sel = winform.cmbProtocol.selText;
-	if(sel != "hysteria2" && sel != "hy2" && sel != "tuic"){
-		winform.lbSecurity.text = "加密方式( security ):";
-	}
+	winform.lbSecurity.text = "加密方式( security ):";
 	if(sel=="vmess"){
 		winform.cmbSecurity.items = {
 			"auto";"none";"chacha20-poly1305";"aes-128-gcm"
@@ -133,12 +131,10 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 		winform.editId.setCueBannerText("请输入密码");
 	}
 	elseif(sel=="hysteria2" || sel=="hy2"){
-		winform.lbSecurity.text = "ALPN 协商:";
-		winform.cmbSecurity.items = {"h3";"默认(无)";"h2";"h2,http/1.1";"http/1.1"};
+		winform.cmbSecurity.items = {"none";}
 		winform.cmbNetwork.items = {"quic";}
 		if(!keepExisting){
 			winform.cmbSecurity.selIndex = 1;
-			winform.outboundConfig.alpn = {"h3"};
 			winform.outboundConfig.security = "none";
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "quic";
@@ -147,12 +143,10 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 		winform.editId.setCueBannerText("请输入认证密码 或 用户名:密码");
 	}
 	elseif(sel=="tuic"){
-		winform.lbSecurity.text = "ALPN 协商:";
-		winform.cmbSecurity.items = {"h3";"默认(无)";"h2";"h2,http/1.1";"http/1.1"};
+		winform.cmbSecurity.items = {"none";}
 		winform.cmbNetwork.items = {"quic";}
 		if(!keepExisting){
 			winform.cmbSecurity.selIndex = 1;
-			winform.outboundConfig.alpn = {"h3"};
 			winform.outboundConfig.security = "none";
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "quic";
@@ -287,34 +281,19 @@ winform.cmbNetwork.onListChange = function(){
 
 winform.cmbSecurity.onListChange = function(){ 
 	var sel = winform.cmbSecurity.selText;
-	var proto = winform.outboundConfig.protocol;
-
-	if(proto == "hysteria2" || proto == "hy2" || proto == "tuic"){
-		if(sel == "默认(无)" || !#sel){
-			winform.outboundConfig.alpn = null;
+	winform.outboundConfig.security = sel;
+	if(winform.outboundConfig.protocol == "vless"){
+		if(sel == "reality"){
+			winform.outboundConfig.tls = "reality";
+			winform.outboundConfig.security = "none";
 		}
-		elseif(sel == "h2,http/1.1"){
-			winform.outboundConfig.alpn = {"h2";"http/1.1"};
+		elseif(sel == "tls"){
+			winform.outboundConfig.tls = "tls";
+			winform.outboundConfig.security = "none";
 		}
-		else {
-			winform.outboundConfig.alpn = {sel};
-		}
-	}
-	else {
-		winform.outboundConfig.security = sel;
-		if(proto == "vless"){
-			if(sel == "reality"){
-				winform.outboundConfig.tls = "reality";
-				winform.outboundConfig.security = "none";
-			}
-			elseif(sel == "tls"){
-				winform.outboundConfig.tls = "tls";
-				winform.outboundConfig.security = "none";
-			}
-			elseif(sel == "none"){
-				winform.outboundConfig.tls = "";
-				winform.outboundConfig.security = "none";
-			}
+		elseif(sel == "none"){
+			winform.outboundConfig.tls = "";
+			winform.outboundConfig.security = "none";
 		}
 	}
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);	
@@ -447,7 +426,7 @@ var editOutboundTip = {
 	spx = {"REALITY爬虫路径";"客户端发起请求时的伪装爬虫路径，默认 /"};
 	fingerprint = {"uTLS指纹";"模拟客户端指纹，可选值：chrome, firefox, safari, ios, android, edge, random, randomized"};
 	fp = {"uTLS指纹";"模拟客户端指纹，可选值：chrome, firefox, safari, ios, android, edge, random, randomized"};
-	alpn = {"应用层协商(ALPN)";'TLS/QUIC 应用层协商协议，如 h3, h2, http/1.1'};
+	alpn = {"应用层协议协商(ALPN)";"TLS/QUIC 握手应用层协商协议。\n常见取值：\n• [ \"h3\" ] (Hysteria 2 / QUIC / TUIC 常用推荐)\n• [ \"h2\" ] (HTTP/2)\n• [ \"h2\", \"http/1.1\" ] (兼容 HTTP/2 与 HTTP/1.1)\n• [ \"http/1.1\" ] (HTTP/1.1)"};
 	allowInsecure = {"允许忽略证书";"布尔值 true/false。仅用于自签名证书的传统 TLS 节点。\n注意：REALITY 协议使用服务端公钥验证，不支持且不需要此项。"};
 	congestion_control = {"TUIC拥塞控制";"可选值为 bbr, cubic, new_reno，默认为 bbr"};
 	udp_relay_mode = {"TUIC UDP转发模式";"可选值为 native (默认) 或 quic"};
@@ -472,6 +451,8 @@ winform.editOutbound.wndproc = function(hwnd,message,wParam,lParam){
 		var n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(%"")[\,\s]*$`); 
 		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(\d+)[\,\s]*$`);
 		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*\{`);
+		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*\[`);
+		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(%\[\])[\,\s]*$`);
 		if( !n ) n,v = string.match(line,`^\s*\"(\w+)\"\s*\:\s*(true|false)[\,\s]*$`);
 		if(editOutboundTip[n]){
 			winform.editOutbound.showInfoTip(editOutboundTip[n][1],editOutboundTip[n][2])
@@ -533,7 +514,13 @@ var insertFieldMenu = {
 	};
 	{ "应用层协议协商:alpn";
 		function(id){
-			winform.addOutboundField("alpn",{"h2";"http/1.1"});
+			var proto = winform.outboundConfig.protocol;
+			if(proto == "hysteria2" || proto == "hy2" || proto == "tuic"){
+				winform.addOutboundField("alpn",{"h3"});
+			}
+			else {
+				winform.addOutboundField("alpn",{"h2";"http/1.1"});
+			}
 		} 
 	};
 	{ "允许忽略证书:allowInsecure";
@@ -718,23 +705,7 @@ var onEditChange = win.debounce(
 		winform.cmbNetwork.selText = data.network;
 		winform.cmbProtocol.selText = data.protocol;
 		winform.cmbProtocol.onProtocolChange(true);
-		if(data.protocol == "hysteria2" || data.protocol == "hy2" || data.protocol == "tuic"){
-			var alpnStr = "";
-			if(type(data.alpn) == "table"){
-				if(#data.alpn == 1) alpnStr = data.alpn[1];
-				elseif(#data.alpn > 1) alpnStr = string.join(data.alpn, ",");
-			}
-			elseif(type(data.alpn) == "string"){
-				alpnStr = data.alpn;
-			}
-			if(#alpnStr){
-				winform.cmbSecurity.selText = alpnStr;
-			}
-			else {
-				winform.cmbSecurity.selText = "默认(无)";
-			}
-		}
-		elseif(data.protocol == "vless"){
+		if(data.protocol == "vless"){
 			if(data.tls == "reality" || data.security == "reality" || (#data.publicKey) || (#data.pbk)){
 				winform.cmbSecurity.selText = "reality";
 			}
