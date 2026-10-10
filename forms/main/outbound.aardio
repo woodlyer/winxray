@@ -178,7 +178,8 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "tcp";  
 			winform.outboundConfig.user = "user";
-			winform.outboundConfig.password = "password";
+			winform.outboundConfig.pass = "password";
+			winform.outboundConfig.password = null;
 			winform.outboundConfig.id = null;
 		}
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
@@ -192,7 +193,8 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 			winform.cmbNetwork.selIndex = 1;
 			winform.outboundConfig.network = "tcp";  
 			winform.outboundConfig.user = "user";
-			winform.outboundConfig.password = "password";
+			winform.outboundConfig.pass = "password";
+			winform.outboundConfig.password = null;
 			winform.outboundConfig.id = null;
 		}
 		winform.btnUpdateCore.text = '下载 / 更新支持组件： Xray Core';
@@ -308,17 +310,26 @@ winform.editId.editBox.onChange = function(){
 			var u,p = string.match(txt,"([^\:]+)\:(.+)");
 			if(u && p){
 				winform.outboundConfig.user = u;
-				winform.outboundConfig.password = p;
+				if(sel=="socks" || sel=="http" || sel=="https"){
+					winform.outboundConfig.pass = p;
+					winform.outboundConfig.password = null;
+				}
+				else {
+					winform.outboundConfig.password = p;
+					winform.outboundConfig.pass = null;
+				}
 				winform.outboundConfig.id = null;
 			}
 			else {
 				winform.outboundConfig.user = txt;
+				winform.outboundConfig.pass = null;
 				winform.outboundConfig.password = null;
 				winform.outboundConfig.id = null;
 			}
 		}
 		else {
 			winform.outboundConfig.user = null;
+			winform.outboundConfig.pass = null;
 			winform.outboundConfig.password = null;
 			winform.outboundConfig.id = null;
 		}
@@ -407,6 +418,7 @@ winform.editPs.editBox.onChange = function(){
 
 var editOutboundTip = {
 	user = {"用户名(user)";"SOCKS/HTTP/NaïveProxy 代理认证用户名"};
+	pass = {"密码(pass)";"SOCKS/HTTP 代理认证密码 (Xray Core 标准字段)"};
 	password = {"密码(password)";"SOCKS/HTTP/NaïveProxy 代理认证密码"};
 	passwd = {"密码(passwd)";"SOCKS/HTTP/NaïveProxy 代理认证密码"};
 	address = {"代理服务器地址";"值可以是域名或者IP地址"};
@@ -479,6 +491,11 @@ var insertFieldMenu = {
 	{ "用户名:user";
 		function(id){
 			winform.addOutboundField("user","user");
+		} 
+	};
+	{ "密码:pass (SOCKS/HTTP)";
+		function(id){
+			winform.addOutboundField("pass","password");
 		} 
 	};
 	{ "密码:password";
@@ -673,7 +690,7 @@ var onEditChange = win.debounce(
 		
 		winform.editPort.text = tostring(data.port : "");
 		var u = data.uuid : data.user;
-		var pwd = data.password : data.passwd;
+		var pwd = data.pass : data.password : data.passwd;
 		if(!u && data.id){
 			var idUser,idPwd = string.match(data.id,"([^\:]+)\:(.+)");
 			if(idUser){
@@ -813,7 +830,14 @@ winform.btnGenGuid.oncommand = function(id,event){
 		var p = string.random(12);
 		winform.editId.text = u + ":" + p;
 		winform.outboundConfig.user = u;
-		winform.outboundConfig.password = p;
+		if(sel=="socks" || sel=="http" || sel=="https"){
+			winform.outboundConfig.pass = p;
+			winform.outboundConfig.password = null;
+		}
+		else {
+			winform.outboundConfig.password = p;
+			winform.outboundConfig.pass = null;
+		}
 		winform.outboundConfig.id = null;
 		winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);
 		winform.updateSharedLink();
@@ -912,7 +936,13 @@ winform.setOutboundConfig = function(cfg){
 			var u,p = string.match(cfg.id,"([^\:]+)\:(.+)");
 			if(u && p){
 				cfg.user = u;
-				cfg.password = p;
+				if(cfg.protocol=="socks" || cfg.protocol=="http" || cfg.protocol=="https"){
+					cfg.pass = p;
+					cfg.password = null;
+				}
+				else {
+					cfg.password = p;
+				}
 				cfg.id = null;
 			}
 		}

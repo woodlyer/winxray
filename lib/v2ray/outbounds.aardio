@@ -34,7 +34,13 @@ exportSharedLinks = function(outbounds){
 		} 
 		elseif(outbound.protocol == "socks"){
 			var ss;
-			if(outbound.id) ss = outbound.protocol + "://" + ..inet.url.encode(outbound.id) + "@" + outbound.address + ":" + outbound.port;
+			var auth = outbound.id;
+			if(!auth && (outbound.user || outbound.pass || outbound.password)){
+				var u = outbound.user : "";
+				var p = outbound.pass : outbound.password : outbound.passwd : "";
+				auth = (u || p) ? (u + ":" + p) : null;
+			}
+			if(auth) ss = outbound.protocol + "://" + ..inet.url.encode(auth) + "@" + outbound.address + ":" + outbound.port;
 			else ss = outbound.protocol + "://" + outbound.address + ":" + outbound.port;
 			..table.push(outString,ss);
 		} 
@@ -314,7 +320,7 @@ exportSharedLinks = function(outbounds){
 			}
 			
 			var user = outbound.user;
-			var password = outbound.password : outbound.passwd;
+			var password = outbound.pass : outbound.password : outbound.passwd;
 			if(!user && !password && outbound.id){
 				var u,p = ..string.match(outbound.id,"([^\:]+)\:([^\:]+)")
 				if(u && p){
@@ -1729,6 +1735,28 @@ validOutbound = function(outbound){
 		}
 		elseif(outbound.password && !outbound.id){
 			outbound.id = outbound.password;
+		}
+	}
+	elseif(outbound.protocol == "socks" || outbound.protocol == "http" || outbound.protocol == "https"){
+		if(outbound.pass && !outbound.password){
+			outbound.password = outbound.pass;
+		}
+		if(outbound.password && !outbound.pass){
+			outbound.pass = outbound.password;
+		}
+		if(outbound.id && !outbound.password){
+			var u,p = ..string.match(outbound.id,"([^\:]+)\:(.+)");
+			if(u && p){
+				outbound.user = u;
+				outbound.password = p;
+				outbound.pass = p;
+			}
+			else {
+				outbound.user = outbound.id;
+			}
+		}
+		elseif(outbound.user && outbound.password && !outbound.id){
+			outbound.id = outbound.user + ":" + outbound.password;
 		}
 	}
 	
