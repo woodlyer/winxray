@@ -224,7 +224,7 @@ winform.btnTestSpeed.oncommand = function(id,event){
 	
 	import process
 	process.execute(chromePath,` --proxy-server="SOCKS5://127.0.0.1:`+v2ray.core.socksProxyPort 
-		+`" --user-data-dir="` +io.appData("winXray/chrome-socks5")+ `" --app="https://speed.cloudflare.com/"`);
+		+`" --user-data-dir="` +io.fullpath("/temp/chrome-socks5")+ `" --app="https://speed.cloudflare.com/"`);
 	winform.btnTestSpeed.disabledText = null;
 }
 
@@ -246,7 +246,7 @@ winform.btnQrCode.skin(style.plainButton)
 winform.btnQrCode.oncommand = function(id,event){
 
 	var frmChild = winform.loadForm("\forms\main\tools\qr.aardio");
-	frmChild.show();
+	if(frmChild) frmChild.show();
 	
 }
 

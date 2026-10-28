@@ -6,7 +6,7 @@ import v2ray.pacServer;
 
 namespace sysProxy;
 
-switch = function(mode){  
+setMode = function(mode){  
 	..config.proxy.mode = mode : "direct";
 	..config.proxy.save();
   
@@ -36,25 +36,27 @@ switch = function(mode){
 	..publish("sysProxy.modeChanged",mode)
 } 
 
+self["switch"] = setMode;
+
 switchToGlobalMode = function(){
-	switch("proxy") 
+	setMode("proxy") 
 }
 
 switchToPacMode = function(){  
-	switch("pac") 
+	setMode("pac") 
 }
 
 switchToDirectMode  = function(){ 
-	switch("direct") 
+	setMode("direct") 
 }
 
 switchHotkey  = function(){ 
     var mode = ..config.proxy.mode;
 	if( mode != "pac"){
-		switch("pac") 
+		setMode("pac") 
 	}
 	else {
-		switch("proxy") 
+		setMode("proxy") 
 	}
 	
 	return ..config.proxy.mode;
@@ -70,7 +72,7 @@ reset = function(proxy){
 	}
 	
 	..inet.conn.setProxy();
-	switch(..config.proxy.mode); 
+	setMode(..config.proxy.mode); 
 } 
 
 ..subscribe("pacServer.restarted",function(pacPort){
@@ -86,10 +88,10 @@ reset = function(proxy){
 } )
 
 /**intellisense(sysProxy)
+setMode(.(mode) = 切换代理模式，同步修改配置文件。\n可选参数："proxy"，"pac"，"direct"
 switch(.(mode) = 切换代理模式，同步修改配置文件。\n可选参数："proxy"，"pac"，"direct"
 switchToGlobalMode() = 设为全局代理，同步修改配置文件。
 switchToPacMode() = 设为PAC自动代理，同步修改配置文件。
 switchToDirectMode() = 设为禁用代理，同步修改配置文件。
 reset(.(是否启用代理)) = 重置系统代理设置，不修改配置文件。\n省略参数时默认值为true。
 end intellisense**/
-	

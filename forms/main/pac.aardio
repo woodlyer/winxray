@@ -77,11 +77,28 @@ import win.dlg.message;
 win.dlg.message.install();
 
 winform.loadPacToEdit = function(str,fromUpdater){
-	var rules = string.match(str,"var\s+rules\s*=\s*(%\[\])")
+	if(!#str){
+		import v2ray.pacServer;
+		str = v2ray.pacServer.loadPacText();
+	}
+	if(!#str) return winform.msgErr("PAC文件内容为空");
+
+	var rules;
+	var p1,p2 = string.find(str, "var\s+rules\s*=\s*\[");
+	if(p1 && p2){
+		var pEnd = string.indexOf(str, "];", p2);
+		if(pEnd){
+			rules = string.slice(str, p2, pEnd);
+		}
+	}
+	if(!rules){
+		rules = string.match(str, "var\s+rules\s*=\s*(%\[\])");
+	}
 	if(!rules) return winform.msgErr("PAC文件格式错误");
 
 	rules = web.json.parse(rules);
-	if(!(rules && table.isArray(rules) && type(rules[1][1])==type.table)) return winform.msgErr("PAC文件格式错误");
+	var isArray = table.isArrayLike ? table.isArrayLike(rules) : (table.isArray(rules) || (type(rules)=="table" && #rules));
+	if(!(rules && isArray && rules[1] && rules[1][1] && type(rules[1][1])==type.table)) return winform.msgErr("PAC文件格式错误");
 
 	var proxy,direct = table.array(),table.array() 
 	for(i=1;#rules){

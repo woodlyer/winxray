@@ -1,0 +1,32 @@
+﻿namespace qrencode;
+
+//https://github.com/fukuchi/libqrencode
+var libqrencode = ..raw.loadDll($"~\lib\qrencode\.dll\qrencode.dll","libqrencode.dll","cdecl");
+
+string = function(str,version,level,casesensitive){
+	if(casesensitive===null)casesensitive=1;
+	var pQrcode;
+	
+	..thread.lock("libqrencode.dll");
+	pQrcode = topointer( libqrencode.QRcode_encodeString(str,version,level,2/*QR_MODE_8*/,casesensitive) );
+	..thread.unlock("libqrencode.dll");
+	if(!pQrcode) return;
+	
+	var qrcode = ..raw.convert( pQrcode, {
+		int version; 
+		int width;
+		ptr data;
+	} );
+	qrcode.data = ..raw.tostring(qrcode.data,1,qrcode.width * qrcode.width);
+	libqrencode.QRcode_free(pQrcode);
+	return qrcode;
+}
+
+/**intellisense()
+qrencode = 用于生成二维码
+qrencode.string(.("UTF8字符串",版本,错误级别) = 生成二维码数据\n版本1:21×21 版本40:177×177,省略根据输入数据自动选择最小版本\n错误修正级别LMQH顺序用0,1,2,3表示,省略该参数默认为0
+qrencode.string() = !libqrencodeinfo.
+!libqrencodeinfo.version = 二维码版本\n这个版本号可能比生成二维码指定的要大
+!libqrencodeinfo.width = 二维码宽度
+!libqrencodeinfo.data = 二维码数据,字符串值\n每个字节低位为1表示深色,否则为浅色\n用法以参考qrencode.bitmap源码
+end intellisense**/

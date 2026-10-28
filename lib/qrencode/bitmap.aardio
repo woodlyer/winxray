@@ -1,0 +1,66 @@
+﻿import fsys.stream;
+import gdip.graphics;
+import gdip.bitmap;
+import qrencode;
+
+namespace qrencode;
+
+class bitmap{
+	ctor( str,version,level,casesensitive ){ {
+		var qrcode = ..qrencode.string(str,version,level,casesensitive);
+		if(!qrcode) return;
+		
+		var data = qrcode.data;
+		var width = qrcode.width;
+		var bmp = ..gdip.bitmap(width,width);
+		var clrData =  bmp.lockData32(,0x22009/*_GdipPixelFormat32bppRGB*/ );
+		var rows = clrData.bits.rows; 
+		var hw;
+    	for(h=1;width){ 
+        	var pixels = rows[h].pixels;
+        	hw = (h-1)*width;
+    		for(w=1;width){  
+    			if(!(data[hw+w] & 1))
+    				pixels[w] =  0xFFFFFF ;
+    			else {
+    				pixels[w] =  0;
+    			}
+    		}
+    	} 
+    	bmp.unlockData(clrData);	
+    	this.width = qrcode.width; 
+    	this.version = qrcode.version;
+    	this.bitmap = bmp;
+	} };
+	copyBitmap = function(width){
+		var bmp = ..gdip.bitmap(width,width);
+		var graphics = bmp.graphics.setInterpolationMode(5/*_InterpolationModeNearestNeighbor*/);
+		::Gdiplus.GdipSetPixelOffsetMode(graphics,4/*_PixelOffsetModeHalf*/);
+		graphics.drawImageStretch(this.bitmap,::RECT(0,0,width,width));
+		graphics.delete();
+		return bmp;
+	}
+	copyBitmapString = function(width,path,quality){
+		var bmp = this.copyBitmap(width,width);
+		if(!bmp)return;
+
+		var stream = ..fsys.stream();
+		bmp.saveToStream(stream,path,quality);
+		var s = stream.readAll();
+		stream.close();
+		bmp.dispose()
+		return s;
+	}
+}
+
+/**intellisense()
+qrencode.bitmap = 创建二维码并用于生成GDI+位图
+qrencode.bitmap(.("UTF8字符串",版本,错误级别) = 生成二维码数据\n版本1:21×21 版本40:177×177,省略根据输入数据自动选择最小版本\n错误修正级别LMQH顺序用0,1,2,3表示,省略该参数默认为0
+qrencode.bitmap() = !libqrencodebitmap.
+!libqrencodebitmap.copyBitmapString(.(宽度,文件格式,图像质量) = 缩放为指定大小的GDI+位图,并返回图像数据\n文件格式为可选参数,用文件后缀名表示,默认为"*.jpg"\n图像质量为可选参数,以百分比表示,默认为100
+!libqrencodebitmap.copyBitmap(__/*宽度*/) = 缩放为指定大小的GDI+位图\n使用相邻插值法缩放
+!libqrencodebitmap.version = 二维码版本\n这个版本号可能比生成二维码指定的要大
+!libqrencodebitmap.width = 二维码宽度
+!libqrencodebitmap.bitmap = 生成的原始GDI+位图\n!gdipbitmap.
+!libqrencodebitmap.copyBitmap() = !gdipbitmap.
+end intellisense**/

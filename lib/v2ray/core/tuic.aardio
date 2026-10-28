@@ -154,7 +154,7 @@ getPath = function(hwnd){
 		return path;
 	}
 		
-	var path = ..io.appData("/winXray/tuic-core/tuic-client.exe");
+	var path = ..io.fullpath("/tuic-core/tuic-client.exe");
 	if(..io.exist(path)){
 		return path;
 	}
@@ -187,9 +187,9 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/v2ray-core/tuic-core/");
 	}
 		
-	var path = ..io.appData("/winXray/tuic-core/tuic-client.exe");
+	var path = ..io.fullpath("/tuic-core/tuic-client.exe");
 	if(..io.exist(path)){
-		return ..io.appData("/winXray/tuic-core/");
+		return ..io.fullpath("/tuic-core/");
 	}
 	
 	if(..io.exist(..io.fullpath("/tuic-core/"))){
@@ -200,7 +200,7 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/tuic-core/");
 	}
 		
-	return ..io.appData("/winXray/tuic-core/");
+	return ..io.fullpath("/tuic-core/");
 } 
 
 updateCore = function(parentForm){
@@ -214,12 +214,12 @@ updateCore = function(parentForm){
 	}
 	
 	import fsys;
-	fsys.delete(..io.appData("/winXray/temp/tuic/"));
+	fsys.delete(..io.fullpath("/temp/tuic/"));
  
 	import inet.downBox;
 	var targetExe = ..io.joinpath(coreDir,"tuic-client.exe");
-	var tempExe = ..io.appData("/winXray/temp/tuic/tuic-client.exe");
-	..io.createDir(..io.appData("/winXray/temp/tuic/"));
+	var tempExe = ..io.fullpath("/temp/tuic/tuic-client.exe");
+	..io.createDir(..io.fullpath("/temp/tuic/"));
 
 	var downBox = ..inet.downBox(parent,"正在下载 TUIC Core，版本：" + versionTag,true);
 	if(!downBox){

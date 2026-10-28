@@ -76,7 +76,7 @@ stop = function(terminateAll){
 	} 
 	if(terminateAll){
 		import process.file;
-		var coreDir = ..io.appData("/winXray/core/");
+		var coreDir = ..io.fullpath("/naive-core/");
 		process.file.terminate(..io.joinpath(coreDir,"naive.exe")); 
 		process.file.terminate("naive.exe");
 	}
@@ -129,7 +129,7 @@ downloadCore = function(){
 	
 	import zlib.httpFile;
 	if( ..zlib.httpFile.download(url,"正在下载 NaïveProxy " 
-		,..io.appData("/winXray/download/naive")
+		,..io.fullpath("/download/naive")
 		,coreDir,,..mainForm.hwnd) ){
 
 		..fsys.enum( coreDir, "naive.exe",
@@ -171,7 +171,7 @@ getPath = function(hwnd){
 		return path;
 	}
 		
-	var path = ..io.appData("/winXray/naive-core/naive.exe");
+	var path = ..io.fullpath("/naive-core/naive.exe");
 	if(..io.exist(path)){
 		return path;
 	}
@@ -194,9 +194,9 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/v2ray-core/naive-core/");
 	}
 		
-	var path = ..io.appData("/winXray/naive-core/naive.exe");
+	var path = ..io.fullpath("/naive-core/naive.exe");
 	if(..io.exist(path)){
-		return ..io.appData("/winXray/naive-core/");
+		return ..io.fullpath("/naive-core/");
 	}
 	
 	var path = ..io.fullpath("/xray-core/xray.exe");
@@ -209,14 +209,14 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/v2ray-core/naive-core/");
 	}
 		
-	var path = ..io.appData("/winXray/core/xray.exe");
+	var path = ..io.fullpath("/xray-core/xray.exe");
 	if(..io.exist(path)){
-		return ..io.appData("/winXray/naive-core/");
+		return ..io.fullpath("/naive-core/");
 	}
 
-	var path = ..io.appData("/winXray/core/v2ray.exe");
+	var path = ..io.fullpath("/v2ray-core/v2ray.exe");
 	if(..io.exist(path)){
-		return ..io.appData("/winXray/naive-core/");
+		return ..io.fullpath("/naive-core/");
 	}
 	
 	var path = ..io.fullpath("/xray-core/");
@@ -229,7 +229,7 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/v2ray-core/naive-core/");
 	}
 		
-	return ..io.appData("/winXray/naive-core/");
+	return ..io.fullpath("/naive-core/");
 } 
 
 updateCore = function(){
@@ -244,16 +244,16 @@ updateCore = function(){
 	}
 	
 	import fsys;
-	fsys.delete(..io.appData("/v2ray/temp/naive/"))
+	fsys.delete(..io.fullpath("/temp/naive/"))
  
 	import zlib.httpFile;
 	if( ..zlib.httpFile.download(url,"正在下载 NaïveProxy，版本：" + versionTag
-		,..io.appData("/winXray/download/naive/")
-		,..io.appData("/winXray/temp/naive/"),,..mainForm.hwnd) ){
+		,..io.fullpath("/download/naive/")
+		,..io.fullpath("/temp/naive/"),,..mainForm.hwnd) ){
 			..mainForm.disabled = false;
 			
 			var naivePath;
-			fsys.enum( ..io.appData("/winXray/temp/naive/"), "naive.exe",
+			fsys.enum( ..io.fullpath("/temp/naive/"), "naive.exe",
 				function(dir,filename,fullpath,findData){ 
 					if(filename){ 
 			           	naivePath = fullpath; 

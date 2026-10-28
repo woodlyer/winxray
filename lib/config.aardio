@@ -1,6 +1,17 @@
 //config 配置文件 
 import fsys.config;
-config  = fsys.config( io.appData("/winXray/") ); 
+import fsys;
+
+// 彻底去除对 AppData 的依赖，所有配置全部存放在程序根目录下的 /config/ 目录中
+var localCfgDir = io.fullpath("/config/");
+var oldAppDir = io.appData("/winXray/");
+
+// 如果本地 /config/ 尚不存在，且旧的 AppData 里有配置数据，自动做一次无缝热迁移
+if( !io.exists(localCfgDir) && io.exists(oldAppDir) ){
+	fsys.copy( io.joinpath(oldAppDir, "*.*"), localCfgDir );
+}
+
+config  = fsys.config( localCfgDir ); 
 
 namespace config {
 	__appName = "winXray"; 
@@ -63,7 +74,7 @@ config.__resetDefaultCore = function(){
 		inbounds={
 			{
 				listen="127.0.0.1";
-				port=0;
+				port=1080;
 				protocol="socks";
 				settings={
 					auth="noauth";
@@ -81,7 +92,7 @@ config.__resetDefaultCore = function(){
 			}; 
 			{
 				listen="127.0.0.1";
-				port=0;
+				port=1082;
 				protocol="http";
 				settings={};
 				sniffing={
@@ -149,8 +160,15 @@ config.__resetDefaultCore = function(){
 	}	
 }
 
-if(!config.core.default){
+if(!config.core.default || !config.core.default.inbounds || !config.core.default.inbounds[1]){
 	config.__resetDefaultCore();
+}
+
+if(config.core.default.inbounds[1] && (config.core.default.inbounds[1].port == 10801 || config.core.default.inbounds[1].port == 0)){
+	config.core.default.inbounds[1].port = 1080;
+}
+if(config.core.default.inbounds[2] && (config.core.default.inbounds[2].port == 10802 || config.core.default.inbounds[2].port == 0)){
+	config.core.default.inbounds[2].port = 1082;
 }
 
 if(!config.core.default.inbounds[2]){

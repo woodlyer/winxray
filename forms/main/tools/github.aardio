@@ -30,7 +30,7 @@ winform.cmbIpCidrs.onListChange = function(){
 
 import wsock;
 import fsys.config;
-config  = fsys.config( io.appData("/aardio/github-ip-tools/") ); 
+config  = fsys.config( io.fullpath("/config/github-ip-tools/") ); 
 winform.plusUpdateIps.oncommand = function(id,event){
 	winform.editIpCurrent.text = wsock.getIp("www.github.com")
 

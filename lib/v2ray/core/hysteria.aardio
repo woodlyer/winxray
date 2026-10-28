@@ -178,7 +178,7 @@ getPath = function(hwnd){
 		return path;
 	}
 		
-	var path = ..io.appData("/winXray/hysteria-core/hysteria.exe");
+	var path = ..io.fullpath("/hysteria-core/hysteria.exe");
 	if(..io.exist(path)){
 		return path;
 	}
@@ -221,9 +221,9 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/v2ray-core/hysteria-core/");
 	}
 		
-	var path = ..io.appData("/winXray/hysteria-core/hysteria.exe");
+	var path = ..io.fullpath("/hysteria-core/hysteria.exe");
 	if(..io.exist(path)){
-		return ..io.appData("/winXray/hysteria-core/");
+		return ..io.fullpath("/hysteria-core/");
 	}
 	
 	if(..io.exist(..io.fullpath("/hysteria-core/"))){
@@ -234,7 +234,7 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/hysteria-core/");
 	}
 		
-	return ..io.appData("/winXray/hysteria-core/");
+	return ..io.fullpath("/hysteria-core/");
 } 
 
 updateCore = function(parentForm){
@@ -248,12 +248,12 @@ updateCore = function(parentForm){
 	}
 	
 	import fsys;
-	fsys.delete(..io.appData("/winXray/temp/hysteria/"));
+	fsys.delete(..io.fullpath("/temp/hysteria/"));
  
 	import inet.downBox;
 	var targetExe = ..io.joinpath(coreDir,"hysteria.exe");
-	var tempExe = ..io.appData("/winXray/temp/hysteria/hysteria.exe");
-	..io.createDir(..io.appData("/winXray/temp/hysteria/"));
+	var tempExe = ..io.fullpath("/temp/hysteria/hysteria.exe");
+	..io.createDir(..io.fullpath("/temp/hysteria/"));
 
 	var downBox = ..inet.downBox(parent,"正在下载 Hysteria Core，版本：" + versionTag,true);
 	if(!downBox){

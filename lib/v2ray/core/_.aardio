@@ -19,7 +19,8 @@ getSystemProxyConfig = function(){
 
 isInboundPortChanged = function(){
 	var inbounds = ..config.core.default.inbounds;
-	if(! (..table.isArray(inbounds) && inbounds[1] && inbounds[2]) ){
+	var isArray = ..table.isArrayLike ? ..table.isArrayLike(inbounds) : (..table.isArray(inbounds) || (type(inbounds)=="table" && #inbounds));
+	if(! (isArray && inbounds[1] && inbounds[2]) ){
 		return true;
 	}	
 	
@@ -36,7 +37,8 @@ restart = function(editor,outbound){
     }
 
 	var inbounds = ..config.core.default[["inbounds"]];
-	if(! (..table.isArray(inbounds) && inbounds[1] ) ){
+	var isArray = ..table.isArrayLike ? ..table.isArrayLike(inbounds) : (..table.isArray(inbounds) || (type(inbounds)=="table" && #inbounds));
+	if(! (isArray && inbounds[1] ) ){
 		return null,"错误的入站SOCKS代理服务器配置" 
 	}
 	if(! ( inbounds[2] ) ){
@@ -176,9 +178,9 @@ restart = function(editor,outbound){
 		}
 		
 		var err;
-		prcsV2Ray,err = ..process.popen(corePath, corePath, "run", "-c", "config.json" );
+		prcsV2Ray,err = ..process.popen(corePath, "run", "-c", jsonPath );
 		if(!prcsV2Ray){
-			prcsV2Ray,err = ..process.popen(corePath, corePath, "-c", "config.json" );
+			prcsV2Ray,err = ..process.popen(corePath, "-c", jsonPath );
 		}
 		..publish("uiCommand.print", corePath);																		   
 		if(!prcsV2Ray){
@@ -292,10 +294,10 @@ getPath = function(hwnd){
 	var checkPaths = {
 		..io.fullpath("/xray-core/xray.exe");
 		..io.fullpath("/v2ray-core/xray.exe");
-		..io.appData("/winXray/core/xray.exe");
+		..io.fullpath("/xray-core/xray.exe");
 		..io.fullpath("/xray-core/v2ray.exe");
 		..io.fullpath("/v2ray-core/v2ray.exe");
-		..io.appData("/winXray/core/v2ray.exe");
+		..io.fullpath("/v2ray-core/v2ray.exe");
 	};
 	
 	for(i=1;#checkPaths;1){
@@ -313,7 +315,7 @@ getPath = function(hwnd){
 	 
 	if(!url) {
 		..publish("uiCommand.print","请下载 Xray Core 到以下路径:");
-		..publish("uiCommand.print",..io.appData("/winXray/core/xray.exe"));
+		..publish("uiCommand.print",..io.fullpath("/xray-core/xray.exe"));
 		
 		..mainForm.disabled = false;
 		self.lastDownloadingCoreFailed = true;
@@ -322,17 +324,17 @@ getPath = function(hwnd){
 	
 	import zlib.httpFile;
 	if( ..zlib.httpFile.download(url,"正在下载 Xray Core"
-		,..io.appData("/winXray/download/")
-		,..io.appData("/winXray/core/"),,..mainForm.hwnd) ){
+		,..io.fullpath("/download/")
+		,..io.fullpath("/xray-core/"),,..mainForm.hwnd) ){
 			
 		self.lastDownloadingCoreFailed = null;
 		..mainForm.disabled = false;
 		
-		var downloadedPath = ..io.appData("/winXray/core/xray.exe");
+		var downloadedPath = ..io.fullpath("/xray-core/xray.exe");
 		if(..io.exist(downloadedPath)){
 			return downloadedPath;
 		}
-		var fallbackPath = ..io.appData("/winXray/core/v2ray.exe");
+		var fallbackPath = ..io.fullpath("/v2ray-core/v2ray.exe");
 		if(..io.exist(fallbackPath)){
 			return fallbackPath;
 		}
@@ -346,7 +348,7 @@ getPath = function(hwnd){
 		..publish("uiCommand.print",url);
 		
 		..publish("uiCommand.print","下载后请解压到以下目录内:");
-		..publish("uiCommand.print",..io.appData("/winXray/core/"));
+		..publish("uiCommand.print",..io.fullpath("/xray-core/"));
 	}  
 } 
 
@@ -354,10 +356,10 @@ getCoreDir = function(hwnd){
 	var checkPaths = {
 		..io.fullpath("/xray-core/xray.exe");
 		..io.fullpath("/v2ray-core/xray.exe");
-		..io.appData("/winXray/core/xray.exe");
+		..io.fullpath("/xray-core/xray.exe");
 		..io.fullpath("/xray-core/v2ray.exe");
 		..io.fullpath("/v2ray-core/v2ray.exe");
-		..io.appData("/winXray/core/v2ray.exe");
+		..io.fullpath("/v2ray-core/v2ray.exe");
 	};
 	for(i=1;#checkPaths;1){
 		if(..io.exist(checkPaths[i])){
@@ -372,7 +374,7 @@ getCoreDir = function(hwnd){
 		return ..io.fullpath("/v2ray-core/");
 	}
 	
-	return ..io.appData("/winXray/core/");
+	return ..io.fullpath("/xray-core/");
 } 
 
 updateCore = function(){
@@ -387,18 +389,18 @@ updateCore = function(){
 	}
 	  
 	import fsys;
-	fsys.delete( ..io.appData("/winXray/temp/xray/") );
+	fsys.delete( ..io.fullpath("/temp/xray/") );
 	 
 	
 	import zlib.httpFile;
 	if( ..zlib.httpFile.download(url,"正在下载 Xray Core，版本：" + versionTag
-		,..io.appData("/winXray/download/")
-		,..io.appData("/winXray/temp/xray/"),,..mainForm.hwnd) ){
+		,..io.fullpath("/download/")
+		,..io.fullpath("/temp/xray/"),,..mainForm.hwnd) ){
 			..mainForm.disabled = false;
 			
-			var tempExe = ..io.appData("/winXray/temp/xray/xray.exe");
+			var tempExe = ..io.fullpath("/temp/xray/xray.exe");
 			if(!..io.exist(tempExe)){
-				tempExe = ..io.appData("/winXray/temp/xray/v2ray.exe");
+				tempExe = ..io.fullpath("/temp/xray/v2ray.exe");
 			}
 			
 			if(..io.exist(tempExe)){
@@ -413,11 +415,11 @@ updateCore = function(){
 				
 				..io.createDir(coreDir); 
 				fsys.copy(tempExe,..io.joinpath(coreDir,"xray.exe")); 
-				if(..io.exist(..io.appData("/winXray/temp/xray/geoip.dat"))){
-					fsys.copy(..io.appData("/winXray/temp/xray/geoip.dat"),..io.joinpath(coreDir,"geoip.dat"));
+				if(..io.exist(..io.fullpath("/temp/xray/geoip.dat"))){
+					fsys.copy(..io.fullpath("/temp/xray/geoip.dat"),..io.joinpath(coreDir,"geoip.dat"));
 				}
-				if(..io.exist(..io.appData("/winXray/temp/xray/geosite.dat"))){
-					fsys.copy(..io.appData("/winXray/temp/xray/geosite.dat"),..io.joinpath(coreDir,"geosite.dat"));
+				if(..io.exist(..io.fullpath("/temp/xray/geosite.dat"))){
+					fsys.copy(..io.fullpath("/temp/xray/geosite.dat"),..io.joinpath(coreDir,"geosite.dat"));
 				}
 				
 				self.lastDownloadingCoreFailed = null;

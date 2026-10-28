@@ -10,7 +10,7 @@ $serverMain = ..wsock.tcp.simpleHttpServer.mainThread(
 
 		if(request.path=="/proxy.pac"){ 
 		 
-			var pacData = ..string.load(pacPath);
+			var pacData = ..string.load(pacPath) : $"/pac.txt";
 			var proxPorts = inboundPort.get();
 			if(!proxPorts[["socksProxy"]]){
 				response.errorStatus(404);
@@ -40,22 +40,54 @@ $serverMain = ..wsock.tcp.simpleHttpServer.mainThread(
 );
 $serverMain.threadNum = 50; 
 
-var pacPath = ..io.appData("/winXray/pac.txt");
+var pacPath = ..io.fullpath("/config/pac.txt");
+
+if( ! ..io.exists(pacPath) ){
+	var oldPac = ..io.fullpath("/pac.txt");
+	if( ..io.exists(oldPac) && !.._STUDIO_INVOKED ){
+		import fsys;
+		fsys.copy(oldPac, pacPath);
+		..io.remove(oldPac);
+	}
+	else {
+		var appDataPac = ..io.appData("/winXray/pac.txt");
+		if( ..io.exists(appDataPac) ){
+			import fsys;
+			fsys.copy(appDataPac, pacPath);
+		}
+	}
+}
+
 resetPac = function(){
 	..string.save(pacPath,$"/pac.txt" )
 }
 
-if( ! ..io.exist(pacPath) ){
+if( ! ..io.exists(pacPath) ){
 	resetPac();
 }
 
 loadPacText = function(){
-	return ..io.exist(pacPath) ? ..string.load(pacPath) || $"/pac.txt";
+	var str = ..string.load(pacPath);
+	if(!#str){
+		str = $"/pac.txt";
+	}
+	return str;
 }
 
 savePacText = function(json){
-	var str = ..string.replace($"/pac.txt","var\s+rules\s*=\s*%\[\]","var rules = " + json);
-	..string.save(pacPath,str );
+	var template = $"/pac.txt";
+	var p1,p2 = ..string.find(template, "var\s+rules\s*=\s*\[");
+	var str;
+	if(p1 && p2){
+		var pEnd = ..string.indexOf(template, "];", p2);
+		if(pEnd){
+			str = ..string.slice(template, 1, p1 - 1) + "var rules = " + json + ..string.slice(template, pEnd + 1);
+		}
+	}
+	if(!str){
+		str = ..string.replace(template, "var\s+rules\s*=\s*%\[\]", "var rules = " + json);
+	}
+	..string.save(pacPath, str);
 }
 
 var inboundPort = ..thread.var();

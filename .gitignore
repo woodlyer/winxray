@@ -9,6 +9,7 @@
 # Binaries and archives
 *.exe
 *.dll
+!/lib/**/*.dll
 *.so
 *.dylib
 *.zip
