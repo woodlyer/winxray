@@ -42,16 +42,16 @@ $serverMain.threadNum = 50;
 
 var pacPath = ..io.fullpath("/config/pac.txt");
 
-if( ! ..io.exists(pacPath) ){
+if( ! ..io.exist(pacPath) ){
 	var oldPac = ..io.fullpath("/pac.txt");
-	if( ..io.exists(oldPac) && !.._STUDIO_INVOKED ){
+	if( ..io.exist(oldPac) && !.._STUDIO_INVOKED ){
 		import fsys;
 		fsys.copy(oldPac, pacPath);
 		..io.remove(oldPac);
 	}
 	else {
 		var appDataPac = ..io.appData("/winXray/pac.txt");
-		if( ..io.exists(appDataPac) ){
+		if( ..io.exist(appDataPac) ){
 			import fsys;
 			fsys.copy(appDataPac, pacPath);
 		}
@@ -62,7 +62,7 @@ resetPac = function(){
 	..string.save(pacPath,$"/pac.txt" )
 }
 
-if( ! ..io.exists(pacPath) ){
+if( ! ..io.exist(pacPath) ){
 	resetPac();
 }
 

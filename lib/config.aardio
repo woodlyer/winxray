@@ -7,7 +7,7 @@ var localCfgDir = io.fullpath("/config/");
 var oldAppDir = io.appData("/winXray/");
 
 // 如果本地 /config/ 尚不存在，且旧的 AppData 里有配置数据，自动做一次无缝热迁移
-if( !io.exists(localCfgDir) && io.exists(oldAppDir) ){
+if( !io.exist(localCfgDir) && io.exist(oldAppDir) ){
 	fsys.copy( io.joinpath(oldAppDir, "*.*"), localCfgDir );
 }
 
