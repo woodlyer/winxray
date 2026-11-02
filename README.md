@@ -23,6 +23,7 @@ WinXray 是一个 Windows 平台上非常好用的轻量代理客户端，原版
 - **类数组判断机制兼容**：修复现代 aardio 中反序列化配置表被误判为非数组的问题，彻底解决启动内核时报“错误的入站SOCKS代理服务器配置”和“错误的出站配置”拦截异常；
 - **Xray 启动参数与路径修正**：修复启动内核时重复传递 `corePath` 导致 `xray.exe: unknown command` 的报错，改用绝对路径 `jsonPath` 规范启动内核；
 - **补全内置 qrencode 扩展库**：随项目内置打包 `qrencode` 扩展库及 `qrencode.dll` 核心动态库，修复工具箱中“二维码生成工具”点击无响应的问题。
+- **继续使用aardio-v35.36.3**，最新的v45版本不稳定，并且底层代码改动比较大，需要很多适配。 https://www.9upk.com/soft/140896.html
 
 ### 3. 入站默认端口规范与 PAC 规则库重大升级
 - **默认入站端口规范化**：默认本地入站端口调整为业界通用的 **1080 (SOCKS5)** 与 **1082 (HTTP)**，并提供平滑迁移逻辑；
@@ -191,40 +192,4 @@ IP 段代理规则：
 
 注意不同的代理协议连接时会调用不同的 Core，例如 NaïveProxy 连接时会启动 naive.exe，Hysteria 连接时会启动 hysteria.exe，TUIC 连接时会启动 tuic-client.exe，此时系统防火墙如弹出提示请点击允许。  
 
-# 安装 NaïveProxy 服务端 
 
-参考：https://github.com/klzgrad/naiveproxy  以 CentOS 为例：
-
-```sh
-yum intall golang
-yum install git
-go get -u github.com/caddyserver/xcaddy/cmd/xcaddy
-~/go/bin/xcaddy build --with github.com/caddyserver/forwardproxy@caddy2=github.com/klzgrad/forwardproxy@naive
-sudo setcap cap_net_bind_service=+ep ./caddy
-wget -O naive.tar.xz  https://github.com/klzgrad/naiveproxy/releases/download/v88.0.4324.96-1/naiveproxy-v88.0.4324.96-1-linux-x64.tar.xz 
-tar -xf ./naive.tar.xz
-
-mv naiveproxy-v88.0.4324.96-1-linux-x64 naive
-echo -e "{\n  \"listen\": \"socks://127.0.0.1:1080\",\n  \"proxy\": \"https://user:pass@example.com\"\n}" > ./naive/config.json
-
-cat << EOF > ./Caddyfile
-:443, example.com
-tls me@example.com
-route {
-  forward_proxy {
-    basic_auth user pass
-    hide_ip
-    hide_via
-    probe_resistance
-  }
-  file_server { root /var/www/html }
-}
-EOF
-
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT;iptables -A INPUT -p tcp --dport 443 -j ACCEPT;firewall-cmd --permanent --add-port=80/tcp;firewall-cmd --permanent --add-port=443/tcp;firewall-cmd --reload;
-
-./naive/naive --config ./naive/config.json &
-./caddy run # 后台运行改成 ./caddy start
-```
-
-安装以前需要提前准备一个域名，并将上面脚本中的 example.com 替换为你的域名，user:pass 改为代理登录用户名与密码。
