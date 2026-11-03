@@ -585,12 +585,27 @@ frmXray.listview.onnotify = function(id,code,ptr){
 			if(!nm) return;
 
 			var currentIdx = nm.iItem;
+			if(currentIdx && currentIdx >= 1 && currentIdx <= #config.proxy.outbounds){
+				if(!frmXray.listview.getSelected(currentIdx)){
+					frmXray.listview.selIndex = currentIdx;
+				}
+			}
+
 			if(!currentIdx){
 				var popmenu = win.ui.popmenu(frmXray);
-				popmenu.add("新增代理服务器",function(id){ 
+				popmenu.add("增加节点",function(id){ 
 					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio"); 
-					frmOutbound.doModal() 
+					frmOutbound.doModal(); 
 				});
+
+				var selIdx = frmXray.listview.getSelectedIndex();
+				if(selIdx && config.proxy.outbounds[selIdx]){
+					popmenu.add("修改节点",function(id){ 
+						var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio"); 
+						frmOutbound.setOutboundConfig(config.proxy.outbounds[selIdx]);
+						frmOutbound.doModal(); 
+					});
+				}
 				
 				popmenu.add("自剪贴板批量导入分享链接、订阅源",function(id){
 					frmXray.importServerFromClipBd();
@@ -638,7 +653,7 @@ frmXray.listview.onnotify = function(id,code,ptr){
 			var selectedItems = frmXray.listview.selected; 
 			var popmenu = win.ui.popmenu(frmXray);
 			
-			if(#selectedItems==1){
+			if(#selectedItems<=1){
 				popmenu.add('设为活动服务器( 鼠标双击 )',function(id){
 					if(currentIdx){
 						v2ray.core.lastDownloadingCoreFailed = false;
@@ -655,10 +670,15 @@ frmXray.listview.onnotify = function(id,code,ptr){
 					}
 				});
 
-				popmenu.add("编辑 / 新增代理服务器",function(id){ 
+				popmenu.add("修改节点",function(id){ 
 					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio");
 					frmOutbound.setOutboundConfig(config.proxy.outbounds[currentIdx]);
 					frmOutbound.doModal();
+				});
+
+				popmenu.add("增加节点",function(id){ 
+					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio"); 
+					frmOutbound.doModal(); 
 				});
 
 				popmenu.add();
@@ -679,11 +699,17 @@ frmXray.listview.onnotify = function(id,code,ptr){
 				popmenu.add();
 			}
 			else {
-				popmenu.add("编辑 / 新增代理服务器",function(id){ 
+				popmenu.add("修改节点",function(id){ 
 					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio");
 					frmOutbound.setOutboundConfig(config.proxy.outbounds[currentIdx]);
 					frmOutbound.doModal();
 				});
+
+				popmenu.add("增加节点",function(id){ 
+					var frmOutbound = frmXray.loadForm("\forms\main\outbound.aardio"); 
+					frmOutbound.doModal(); 
+				});
+
 				popmenu.add();
 			}
 			 
@@ -741,8 +767,7 @@ frmXray.listview.onnotify = function(id,code,ptr){
 			});
 			popmenu.check(id,autoConnect,0/*_MF_BYCOMMAND*/); 
 			popmenu.add()
-			
-			popmenu.add('删除服务器',function(id){
+			popmenu.add('删除节点',function(id){
 				removeOutbounds(selectedItems);
 			});
 				
@@ -1211,7 +1236,6 @@ frmXray.btnStopCore.oncommand = function(id,event){
 		
 		var addr = frmXray.listview.getItemText(selIdx, 2);
 		activeOutbound(selIdx, addr, false);
-		frmXray.updateToggleCoreButton(true);
 	}
 }
 
@@ -1220,6 +1244,17 @@ subscribe("v2RayCore.restarted",function(socksProxyPort,httpProxPort){
 })
 subscribe("v2RayCore.stopped",function(){
 	frmXray.updateToggleCoreButton(false);
+	if(frmXray.listview.activeOutboundIndex !== null){
+		frmXray.listview.activeOutboundIndex = null;
+		frmXray.listview.activeOutboundAddress = null;
+		for b,v in table.eachIndex(config.proxy.outbounds){
+			frmXray.listview.setItemText("",b,8);
+		}
+	}
+	sysProxy.switchToDirectMode();
+	frmXray.radioProxyDirect.checked = true;
+	frmXray.radioProxyPac.checked = false;
+	frmXray.radioProxy.checked = false;
 })
 frmXray.updateToggleCoreButton();
 

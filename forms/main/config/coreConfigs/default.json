@@ -58,8 +58,46 @@
             "tag": "block"
         }
     ],
+    "dns": {
+        // 强制仅查询 IPv4（A 记录），规避国内残缺 IPv6 导致的网络卡顿、断流及 IPv6 DNS 泄漏
+        "queryStrategy": "UseIPv4",
+        "servers": [
+            // 1. 国内域名解析：优先走阿里 DoH 加密解析，+local 强制本机网络直连，expectIPs 防本地运营商劫持投毒
+            {
+                "address": "https+local://223.5.5.5/dns-query",
+                "domains": [
+                    "geosite:cn"
+                ],
+                "expectIPs": [
+                    "geoip:cn"
+                ]
+            },
+            // 2. 国内传统 DNS 备用：阿里标准 UDP 53，用于 DoH 异常或极低延迟直连解析
+            {
+                "address": "223.5.5.5",
+                "port": 53,
+                "domains": [
+                    "geosite:cn"
+                ],
+                "expectIPs": [
+                    "geoip:cn"
+                ]
+            },
+            // 3. 境外域名定向解析：非大陆域名走 Cloudflare DoH，走代理出站解析，防止 GFW 污染与 DNS 泄漏
+            {
+                "address": "https://1.1.1.1/dns-query",
+                "domains": [
+                    "geosite:geolocation-!cn"
+                ]
+            },
+            // 4. 兜底解析服务器列表
+            "https://1.1.1.1/dns-query",
+            "tcp://8.8.8.8:53",
+            "223.5.5.5"
+        ]
+    },
     "routing": {
-        "domainStrategy": "IPIfNonMatch",
+        "domainStrategy": "AsIs",
         "rules": [
             {
                 "inboundTag": [

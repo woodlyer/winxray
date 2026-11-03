@@ -213,7 +213,7 @@ winform.cmbProtocol.onProtocolChange = function(keepExisting){
 	} 
 }
 
-winform.cmbProtocol.onListChange = function(){ 
+winform.cmbProtocol.onSelChange = function(){ 
 	winform.cmbProtocol.onProtocolChange(); 
 
 	table.define(winform.outboundConfig);
@@ -274,14 +274,14 @@ winform.cmbProtocol.onListChange = function(){
 	winform.updateSharedLink();
 }
 
-winform.cmbNetwork.onListChange = function(){ 
+winform.cmbNetwork.onSelChange = function(){ 
 	var sel = winform.cmbNetwork.selText;
 	winform.outboundConfig.network = sel;
 	winform.editOutbound.text = web.json.stringify(winform.outboundConfig,true,false);	
 	winform.updateSharedLink();
 }
 
-winform.cmbSecurity.onListChange = function(){ 
+winform.cmbSecurity.onSelChange = function(){ 
 	var sel = winform.cmbSecurity.selText;
 	winform.outboundConfig.security = sel;
 	if(winform.outboundConfig.protocol == "vless"){
@@ -725,13 +725,13 @@ var onEditChange = win.debounce(
 		winform.editAddress.editBox.onChange = editAddressChange;
 		winform.editPs.editBox.onChange = editPsChange;
 		
-		var cmbNetworkChange = winform.cmbNetwork.onListChange;
-		var cmbProtocolChange = winform.cmbProtocol.onListChange;
-		var cmbSecurityChange = winform.cmbSecurity.onListChange;
+		var cmbNetworkChange = winform.cmbNetwork.onSelChange;
+		var cmbProtocolChange = winform.cmbProtocol.onSelChange;
+		var cmbSecurityChange = winform.cmbSecurity.onSelChange;
 		
-		winform.cmbNetwork.onListChange = null;
-		winform.cmbProtocol.onListChange = null;
-		winform.cmbSecurity.onListChange = null;
+		winform.cmbNetwork.onSelChange = null;
+		winform.cmbProtocol.onSelChange = null;
+		winform.cmbSecurity.onSelChange = null;
 		
 		winform.cmbNetwork.selText = data.network;
 		winform.cmbProtocol.selText = data.protocol;
@@ -751,9 +751,9 @@ var onEditChange = win.debounce(
 			winform.cmbSecurity.selText = data.security;
 		}
 		
-		winform.cmbNetwork.onListChange = cmbNetworkChange;
-		winform.cmbProtocol.onListChange = cmbProtocolChange;
-		winform.cmbSecurity.onListChange = cmbSecurityChange;
+		winform.cmbNetwork.onSelChange = cmbNetworkChange;
+		winform.cmbProtocol.onSelChange = cmbProtocolChange;
+		winform.cmbSecurity.onSelChange = cmbSecurityChange;
 		
 		winform.updateSharedLink();		
 	},500
@@ -783,8 +783,13 @@ winform.btnSaveOutbound.oncommand = function(id,event){
 		}  
 	}
 	
-	table.clear(winform.origOutboundConfig);
-	table.assign(winform.origOutboundConfig,winform.outboundConfig);
+	if(winform.origOutboundConfig && table.find(config.proxy.outbounds,winform.origOutboundConfig)){
+		table.clear(winform.origOutboundConfig);
+		table.assign(winform.origOutboundConfig,winform.outboundConfig);
+	}
+	else {
+		table.push(config.proxy.outbounds,winform.outboundConfig);
+	}
 	config.proxy.save();
 	winform.endModal();
 	
@@ -931,6 +936,7 @@ winform.btnCopySharedLink.oncommand = function(id,event){
 
 
 winform.setOutboundConfig = function(cfg){
+	winform.text = "winXray - 修改代理服务器节点";
 	if(cfg.protocol=="socks" || cfg.protocol=="http" || cfg.protocol=="https" || cfg.protocol=="naive"){
 		if(cfg.id && (cfg.user === null)){
 			var u,p = string.match(cfg.id,"([^\:]+)\:(.+)");
@@ -951,7 +957,7 @@ winform.setOutboundConfig = function(cfg){
 		cfg.allowInsecure = true;
 	}
     winform.cmbProtocol.selText = cfg.protocol;
-	winform.cmbProtocol.onListChange();
+	winform.cmbProtocol.onSelChange();
 	
 	winform.btnAddOutbound.skin(style.button);
 	winform.btnSaveOutbound.skin(style.primaryButton);
@@ -968,6 +974,7 @@ winform.setOutboundConfig({
 	network = "tcp";
 	allowInsecure = true;
 });
+winform.text = "winXray - 增加代理服务器节点";
 winform.btnAddOutbound.skin(style.primaryButton);
 winform.btnSaveOutbound.skin(style.button);
 winform.btnSaveOutbound.disabled = true;

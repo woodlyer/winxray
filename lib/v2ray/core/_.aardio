@@ -27,7 +27,7 @@ isInboundPortChanged = function(){
 	return (inbounds[1].port!=socksProxyPort) || (inbounds[2].port!=httpProxPort)
 }
 
-var prcsV2Ray,v2RayStarting;
+var prcsV2Ray,v2RayStarting,coreWatchdogTimerId,lastEditor;
 import process.job.limitKill;
 restart = function(editor,outbound){
 	
@@ -205,9 +205,55 @@ restart = function(editor,outbound){
 			v2RayStarting = false;
 			return;
 		}
+		lastEditor = editor;
 		prcsV2Ray.assignToJobObject(process.job.limitKill);
 		prcsV2Ray.codepage = 65001;	
 		prcsV2Ray.logResponse(editor);  
+		
+		// 等待 250ms 检测进程是否刚启动就异常退出（如端口冲突、配置错误）
+		..win.delay(250);
+		if( !prcsV2Ray.stillActive() ){
+			var outMsg, errMsg = prcsV2Ray.peek(0);
+			var fatalMsg = ..string.concat(outMsg, errMsg);
+			prcsV2Ray.close();
+			prcsV2Ray = null;
+			if( nexCore ){ nexCore.stop(); }
+			
+			var reason = "Xray Core 启动后立即异常退出！";
+			if(..string.find(fatalMsg, "@bind") || ..string.find(fatalMsg, "@failed to listen") || ..string.find(fatalMsg, "@already in use") || ..string.find(fatalMsg, "@forbidden by its access permissions")){
+				reason = "启动失败：本地端口(" + socksProxyPort + " 或 " + httpProxPort + ")已被其他程序占用！请先关闭占用该端口的程序或在高级设置中更换端口。";
+			}
+			elseif(#fatalMsg){
+				reason = "启动失败：" + ..string.trim(fatalMsg);
+			}
+			
+			..publish("uiCommand.print", "----------------------------------------");
+			..publish("uiCommand.print", "【错误】" + reason);
+			..publish("uiCommand.print", "----------------------------------------");
+			..publish("v2RayCore.stopped");
+			v2RayStarting = false;
+			return false, reason;
+		}
+
+		if(editor && editor.setInterval){
+			if(coreWatchdogTimerId){
+				editor.clearInterval(coreWatchdogTimerId);
+				coreWatchdogTimerId = null;
+			}
+			coreWatchdogTimerId = editor.setInterval(
+				function(){
+					if(prcsV2Ray && !prcsV2Ray.stillActive()){
+						editor.clearInterval(coreWatchdogTimerId);
+						coreWatchdogTimerId = null;
+						prcsV2Ray.close();
+						prcsV2Ray = null;
+						..publish("uiCommand.print", "【提示】Xray Core 进程意外退出，服务暂停。");
+						..publish("v2RayCore.stopped");
+						return 0;
+					}
+				}, 500
+			);
+		}
 		
 		inbounds[1].port = socksProxyPort;
 		inbounds[2].port = httpProxPort;
@@ -221,6 +267,11 @@ restart = function(editor,outbound){
 }
 
 stop = function(terminateAll){
+	if(coreWatchdogTimerId && lastEditor){
+		lastEditor.clearInterval(coreWatchdogTimerId);
+		coreWatchdogTimerId = null;
+	}
+	
 	..v2ray.core.ssr.stop(terminateAll);
 	..v2ray.core.naive.stop(terminateAll);
 	..v2ray.core.tuic.stop(terminateAll);
@@ -256,7 +307,17 @@ stop = function(terminateAll){
 }
 
 isRunning = function(){
-	if(prcsV2Ray) return true;
+	if(prcsV2Ray){
+		if(prcsV2Ray.stillActive()){
+			return true;
+		}
+		else {
+			prcsV2Ray.close();
+			prcsV2Ray = null;
+			..publish("v2RayCore.stopped");
+			return false;
+		}
+	}
 	if(..v2ray.core.hysteria && ..v2ray.core.hysteria.isRunning && ..v2ray.core.hysteria.isRunning()) return true;
 	if(..v2ray.core.tuic && ..v2ray.core.tuic.isRunning && ..v2ray.core.tuic.isRunning()) return true;
 	if(..v2ray.core.naive && ..v2ray.core.naive.isRunning && ..v2ray.core.naive.isRunning()) return true;

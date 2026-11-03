@@ -16,7 +16,7 @@ static2={cls="static";text="当前指向IP:";left=27;top=208;right=111;bottom=22
 )
 /*}}*/
 
-winform.cmbIpCidrs.onListChange = function(){  
+winform.cmbIpCidrs.onSelChange = function(){  
 	winform.setTimeout( 
 		function(){
 			var ip = string.match(winform.cmbIpCidrs.selText,"\d+\.\d+\.\d+\.\d+");
@@ -135,7 +135,7 @@ Accept-Charset:utf-8;
 	
 	winform.cmbIpCidrs.items = ipData;
 	winform.cmbIpCidrs.selIndex = 1;
-	winform.cmbIpCidrs.onListChange();
+	winform.cmbIpCidrs.onSelChange();
 	
 	winform.text = "github.com 网速优化工具"
 	winform.plusUpdateIps.disabledText = null;

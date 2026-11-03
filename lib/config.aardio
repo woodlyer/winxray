@@ -130,8 +130,35 @@ config.__resetDefaultCore = function(){
 				tag="block";
 			}
 		};
+		dns={
+			queryStrategy="UseIPv4"; // 强制仅查询 IPv4，规避残缺 IPv6 导致解析卡顿及泄漏
+			servers={
+				// 国内域名解析：阿里 DoH +local 强制直连，expectIPs 防运营商劫持投毒
+				{
+					address="https+local://223.5.5.5/dns-query";
+					domains={ "geosite:cn" };
+					expectIPs={ "geoip:cn" };
+				};
+				// 国内传统 53 端口备选
+				{
+					address="223.5.5.5";
+					port=53;
+					domains={ "geosite:cn" };
+					expectIPs={ "geoip:cn" };
+				};
+				// 境外非大陆域名：走 Cloudflare DoH（走代理出站防污染与泄漏）
+				{
+					address="https://1.1.1.1/dns-query";
+					domains={ "geosite:geolocation-!cn" };
+				};
+				// 兜底 DNS
+				"https://1.1.1.1/dns-query";
+				"tcp://8.8.8.8:53";
+				"223.5.5.5";
+			};
+		};
 		routing={
-			domainStrategy="IPIfNonMatch";
+			domainStrategy="AsIs";
 			rules={
 				{
 					inboundTag={
@@ -195,6 +222,36 @@ if(config.core.default.inbounds){
 			ib.sniffing.routeOnly = true;
 		}
 	}
+}
+
+if(config.core.default.routing && (config.core.default.routing.domainStrategy == "IPIfNonMatch" || !config.core.default.routing.domainStrategy)){
+	config.core.default.routing.domainStrategy = "AsIs";
+}
+
+if(!config.core.default.dns || !config.core.default.dns.queryStrategy){
+	config.core.default.dns = {
+		queryStrategy="UseIPv4"; // 强制仅查询 IPv4
+		servers={
+			{
+				address="https+local://223.5.5.5/dns-query";
+				domains={ "geosite:cn" };
+				expectIPs={ "geoip:cn" };
+			};
+			{
+				address="223.5.5.5";
+				port=53;
+				domains={ "geosite:cn" };
+				expectIPs={ "geoip:cn" };
+			};
+			{
+				address="https://1.1.1.1/dns-query";
+				domains={ "geosite:geolocation-!cn" };
+			};
+			"https://1.1.1.1/dns-query";
+			"tcp://8.8.8.8:53";
+			"223.5.5.5";
+		};
+	};
 }
 
 /**intellisense(config)
